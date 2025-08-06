@@ -1,0 +1,1166 @@
+<?php
+session_start();
+
+// Cek apakah admin sudah login
+if (!isset($_SESSION['admin_logged_in'])) {
+    header("Location: login.php");
+    exit();
+}
+
+include '../config.php';
+include '../includes/db.php';
+
+// Query untuk mendapatkan informasi akun admin
+$admin_id = $_SESSION['admin_id'];
+$sql = "SELECT * FROM admin WHERE id_admin = '$admin_id' LIMIT 1";
+$result = mysqli_query($conn, $sql);
+$admin = mysqli_fetch_assoc($result);
+
+// Proses update akun admin
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nama_lengkap = mysqli_real_escape_string($conn, $_POST['nama_lengkap']);
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $password = !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_DEFAULT) : $admin['password'];
+
+    // Query untuk memperbarui data akun admin
+    $update_sql = "UPDATE admin SET nama_lengkap = '$nama_lengkap', email = '$email', username = '$username', password = '$password' WHERE id_admin = '$admin_id'";
+
+    if (mysqli_query($conn, $update_sql)) {
+        $message = "Data akun berhasil diperbarui!";
+        $message_type = "success";
+        // Refresh data admin
+        $result = mysqli_query($conn, $sql);
+        $admin = mysqli_fetch_assoc($result);
+    } else {
+        $message = "Error: " . mysqli_error($conn);
+        $message_type = "error";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akun Admin - Sewa Gedung</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            text-align: center;
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-header h2 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 1rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-item a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-item a.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .nav-item a i {
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .mobile-overlay.active {
+            display: block;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .content-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .content-header h1 {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .content-header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: #22c55e;
+            color: #16a34a;
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #dc2626;
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .profile-header-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .profile-avatar i {
+            font-size: 3rem;
+            color: white;
+        }
+
+        .profile-title {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Button Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(156, 163, 175, 0.2);
+            color: #9ca3af;
+            border: 1px solid rgba(156, 163, 175, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(156, 163, 175, 0.3);
+            color: white;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: center;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-value {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .content-header h1 {
+                font-size: 2rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .content-header {
+                padding: 1.5rem;
+            }
+
+            .profile-card {
+                padding: 1.5rem;
+            }
+
+            .content-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+            }
+
+            .profile-avatar i {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
+
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-building"></i> Admin Panel</h2>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="dashboard.php">
+                        <i class="fas fa-home"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="data_penyewa.php">
+                        <i class="fas fa-users"></i>
+                        Data Penyewa
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="data_pemesanan.php">
+                        <i class="fas fa-calendar-check"></i>
+                        Data Pemesanan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="riwayat_pemesanan.php">
+                        <i class="fas fa-history"></i>
+                        Riwayat Pemesanan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="laporan_penyewaan.php">
+                        <i class="fas fa-chart-bar"></i>
+                        Laporan Penyewaan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="account.php" class="active">
+                        <i class="fas fa-user-cog"></i>
+                        Akun Admin
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="logout.php">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="content-header">
+                <h1><i class="fas fa-user-cog"></i> Akun Admin</h1>
+                <p>Kelola informasi akun administrator sistem</p>
+            </div>
+
+            <!-- Alerts -->
+            <?php if (isset($message)): ?>
+                <div class="alert alert-<?= $message_type === 'success' ? 'success' : 'danger' ?>">
+                    <i class="fas fa-<?= $message_type === 'success' ? 'check-circle' : 'exclamation-triangle' ?>"></i>
+                    <?= htmlspecialchars($message) ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Profile Card -->
+            <div class="profile-card">
+                <!-- Profile Header -->
+                <div class="profile-header-section">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h2 class="profile-title">Administrator</h2>
+                    <p class="profile-subtitle">Sistem Sewa Gedung PT Aneka</p>
+                </div>
+
+                <!-- Current Info Display -->
+                <h3 style="color: white; margin-bottom: 1.5rem; font-size: 1.4rem;">
+                    <i class="fas fa-info-circle"></i> Informasi Akun Saat Ini
+                </h3>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">ID Admin</div>
+                        <div class="info-value">#<?= htmlspecialchars($admin['id_admin']) ?></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Username</div>
+                        <div class="info-value"><?= htmlspecialchars($admin['username']) ?></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Nama Lengkap</div>
+                        <div class="info-value"><?= htmlspecialchars($admin['nama_lengkap']) ?></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value"><?= htmlspecialchars($admin['email']) ?></div>
+                    </div>
+                </div>
+
+                <!-- Update Form -->
+                <h3 style="color: white; margin: 2rem 0 1.5rem; font-size: 1.4rem;">
+                    <i class="fas fa-edit"></i> Update Informasi Akun
+                </h3>
+                
+                <form method="POST" action="">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="nama_lengkap" class="form-label">
+                                <i class="fas fa-user"></i>
+                                Nama Lengkap
+                            </label>
+                            <input type="text" id="nama_lengkap" name="nama_lengkap" 
+                                   value="<?= htmlspecialchars($admin['nama_lengkap']) ?>" 
+                                   class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-at"></i>
+                                Username
+                            </label>
+                            <input type="text" id="username" name="username" 
+                                   value="<?= htmlspecialchars($admin['username']) ?>" 
+                                   class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope"></i>
+                                Email
+                            </label>
+                            <input type="email" id="email" name="email" 
+                                   value="<?= htmlspecialchars($admin['email']) ?>" 
+                                   class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock"></i>
+                                Password Baru (Opsional)
+                            </label>
+                            <input type="password" id="password" name="password" 
+                                   placeholder="Kosongkan jika tidak ingin mengubah password" 
+                                   class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Simpan Perubahan
+                        </button>
+                        <a href="dashboard.php" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            Kembali ke Dashboard
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Mobile Menu Functions
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        
+        function closeMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+        
+        // Close mobile menu when clicking on nav links
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-item a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
+            });
+        });
+
+        // Auto hide alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => {
+                        alert.style.display = 'none';
+                    }, 300);
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+</html>
+            margin: 0;
+        }
+
+        .profile-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .profile-icon {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .profile-icon i {
+            font-size: 60px;
+            color: #8B4513;
+            background: #f5f5f0;
+            padding: 20px;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            line-height: 80px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #8B4513;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f5f5f0;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: #8B4513;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #8B4513;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+        }
+
+        .password-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8B4513;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .btn-update {
+            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn-update:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 69, 19, 0.3);
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-content {
+                padding: 15px;
+            }
+            
+            .profile-header h1 {
+                font-size: 20px;
+            }
+            
+            .profile-container {
+                padding: 25px;
+            }
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+                width: 300px;
+                box-shadow: 8px 0 25px rgba(0, 0, 0, 0.2);
+            }
+            
+            .sidebar.mobile-show {
+                transform: translateX(0);
+            }
+            
+            .mobile-overlay.show {
+                display: block;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 80px 20px 20px 20px;
+            }
+            
+            .profile-header {
+                padding: 20px 25px;
+                margin-bottom: 20px;
+                border-radius: 16px;
+            }
+            
+            .profile-header h1 {
+                font-size: 20px;
+            }
+            
+            .profile-container {
+                padding: 25px;
+                border-radius: 16px;
+            }
+            
+            .profile-icon {
+                margin-bottom: 25px;
+            }
+            
+            .profile-icon i {
+                font-size: 55px;
+                padding: 18px;
+                width: 110px;
+                height: 110px;
+                line-height: 74px;
+            }
+            
+            .form-input {
+                padding: 14px 16px;
+                font-size: 15px;
+                border-radius: 12px;
+            }
+            
+            .btn-update {
+                padding: 16px 35px;
+                font-size: 16px;
+                border-radius: 12px;
+            }
+            
+            /* Sidebar mobile adjustments */
+            .sidebar-header {
+                padding: 30px 25px;
+            }
+            
+            .logo {
+                width: 70px;
+                height: 70px;
+                margin-bottom: 15px;
+            }
+            
+            .sidebar h2 {
+                font-size: 16px;
+            }
+            
+            .nav-item {
+                margin: 6px 20px;
+            }
+            
+            .nav-link {
+                padding: 18px 24px;
+                font-size: 16px;
+                border-radius: 14px;
+            }
+            
+            .nav-link i {
+                margin-right: 18px;
+                font-size: 18px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 70px 15px 15px 15px;
+            }
+            
+            .sidebar {
+                width: 280px;
+            }
+            
+            .profile-container {
+                padding: 20px;
+                border-radius: 14px;
+            }
+            
+            .profile-header {
+                padding: 16px 20px;
+                border-radius: 14px;
+            }
+            
+            .profile-header h1 {
+                font-size: 18px;
+            }
+            
+            .profile-icon i {
+                font-size: 45px;
+                width: 90px;
+                height: 90px;
+                line-height: 60px;
+                padding: 15px;
+            }
+            
+            .form-input {
+                padding: 12px 14px;
+                font-size: 14px;
+                border-radius: 10px;
+            }
+            
+            .section-title {
+                font-size: 17px;
+            }
+            
+            .form-label {
+                font-size: 14px;
+            }
+            
+            .btn-update {
+                padding: 14px 30px;
+                font-size: 15px;
+                border-radius: 10px;
+            }
+            
+            .mobile-menu-toggle {
+                top: 15px;
+                left: 15px;
+                padding: 12px;
+                font-size: 18px;
+            }
+            
+            /* Sidebar mobile small screen adjustments */
+            .sidebar-header {
+                padding: 25px 20px;
+            }
+            
+            .logo {
+                width: 60px;
+                height: 60px;
+                margin-bottom: 12px;
+            }
+            
+            .sidebar h2 {
+                font-size: 14px;
+            }
+            
+            .nav-item {
+                margin: 4px 15px;
+            }
+            
+            .nav-link {
+                padding: 16px 20px;
+                font-size: 15px;
+                border-radius: 12px;
+            }
+            
+            .nav-link i {
+                margin-right: 15px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
+    
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <h1>Sewa Gedung</h1>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="dashboard.php">
+                        <i class="fas fa-home"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="dashboard.php#data-penyewa">
+                        <i class="fas fa-users"></i>
+                        Data Penyewa
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="dashboard.php#data-pemesanan">
+                        <i class="fas fa-calendar-check"></i>
+                        Data Pemesanan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="riwayat_pemesanan.php">
+                        <i class="fas fa-history"></i>
+                        Riwayat Pemesanan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="laporan_penyewaan.php">
+                        <i class="fas fa-chart-bar"></i>
+                        Laporan Penyewaan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="account.php" class="active">
+                        <i class="fas fa-user-cog"></i>
+                        Akun
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="logout.php">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <h1>PROFIL ADMIN</h1>
+            </div>
+
+            <!-- Profile Container -->
+            <div class="profile-container">
+                <!-- Profile Icon -->
+                <div class="profile-icon">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+
+                <!-- Alert Messages -->
+                <?php if (isset($message)): ?>
+                    <div class="alert <?= $message_type ?>">
+                        <?= $message ?>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Profile Form -->
+                <form method="POST" action="">
+                    <div class="form-section">
+                        <h3 class="section-title">Data Admin</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">ID Admin</label>
+                            <input type="text" class="form-input" value="<?= htmlspecialchars($admin['id_admin']) ?>" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Nama Lengkap</label>
+                            <input type="text" name="nama_lengkap" class="form-input" value="<?= htmlspecialchars($admin['nama_lengkap']) ?>" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-input" value="<?= htmlspecialchars($admin['email']) ?>" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-input" value="<?= htmlspecialchars($admin['username']) ?>" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Password (Kosongkan jika tidak ingin mengubah)</label>
+                            <div class="password-group">
+                                <input type="password" name="password" class="form-input" id="password" placeholder="Masukkan password baru">
+                                <i class="fas fa-eye password-toggle" onclick="togglePassword()"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-update">
+                        <i class="fas fa-save"></i> Simpan Perubahan
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Mobile Menu Functions
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            
+            sidebar.classList.toggle('mobile-show');
+            overlay.classList.toggle('show');
+        }
+        
+        function closeMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            
+            sidebar.classList.remove('mobile-show');
+            overlay.classList.remove('show');
+        }
+        
+        // Close mobile menu when clicking on nav links
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
+            });
+        });
+        
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.querySelector('.password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
+</body>
+</html>

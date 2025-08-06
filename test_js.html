@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test JavaScript Functions</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <h2>Test Elements</h2>
+    <input type="date" id="tanggal_mulai" value="2025-08-10">
+    <input type="date" id="tanggal_selesai" value="2025-08-12">
+    <button onclick="pesanSekarang()">Test Pesan Sekarang</button>
+    
+    <script>
+        function pesanSekarang() {
+            const startDate = document.getElementById('tanggal_mulai').value;
+            const endDate = document.getElementById('tanggal_selesai').value;
+            
+            console.log('Start Date:', startDate);
+            console.log('End Date:', endDate);
+            
+            if (!startDate || !endDate) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tanggal Belum Dipilih',
+                    text: 'Silakan pilih tanggal mulai dan selesai terlebih dahulu',
+                    confirmButtonColor: '#667eea'
+                });
+                return;
+            }
+            
+            // Show loading
+            Swal.fire({
+                title: 'Memproses...',
+                text: 'Sedang mempersiapkan halaman booking',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Redirect after short delay for better UX
+            setTimeout(() => {
+                const url = `proses_sewa.php?acara=seminar&tanggal_mulai=${encodeURIComponent(startDate)}&tanggal_selesai=${encodeURIComponent(endDate)}`;
+                console.log('Redirect URL:', url);
+                alert('Would redirect to: ' + url);
+                Swal.close();
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

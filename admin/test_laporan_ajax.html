@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Laporan API</title>
+</head>
+<body>
+    <h3>Test AJAX Laporan</h3>
+    <div id="result"></div>
+    
+    <script>
+    // Test get_laporan.php
+    fetch('ajax/get_laporan.php')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Laporan data:', data);
+            document.getElementById('result').innerHTML = 
+                '<h4>✅ Success!</h4>' +
+                '<p>Records: ' + data.length + '</p>' +
+                '<p>Sample: ' + JSON.stringify(data[0], null, 2) + '</p>';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('result').innerHTML = 
+                '<h4>❌ Error!</h4>' +
+                '<p>' + error.message + '</p>';
+        });
+    </script>
+</body>
+</html>
