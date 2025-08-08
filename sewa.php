@@ -331,6 +331,34 @@ $eventImage = $eventImages[$event['nama_acara']] ?? 'asset/gambar/gedung1.jpg';
             box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
         }
 
+        /* Special styling for kebutuhan tambahan textarea */
+        .form-input[name="kebutuhan_tambahan"] {
+            min-height: 120px;
+            resize: vertical;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 2px solid #e9ecef;
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+        }
+
+        .form-input[name="kebutuhan_tambahan"]:focus {
+            border-color: #8B4513;
+            box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+        }
+
+        .form-input[name="kebutuhan_tambahan"]::placeholder {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .form-help {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-style: italic;
+        }
+
         .date-input {
             position: relative;
         }
@@ -652,8 +680,11 @@ $eventImage = $eventImages[$event['nama_acara']] ?? 'asset/gambar/gedung1.jpg';
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Kebutuhan Tambahan</label>
-                        <textarea class="form-input" name="kebutuhan_tambahan" rows="4" placeholder="Tuliskan kebutuhan khusus untuk acara Anda (opsional)"></textarea>
+                        <label class="form-label">
+                            <i class="fas fa-clipboard-list"></i> Kebutuhan Tambahan
+                        </label>
+                        <textarea class="form-input" name="kebutuhan_tambahan" id="kebutuhan_tambahan" rows="4" placeholder="Tuliskan kebutuhan khusus untuk acara Anda (opsional)"></textarea>
+                        <small class="form-help">Contoh: Dekorasi, catering, sound system tambahan, dll.</small>
                     </div>
 
                     <div class="form-group">
@@ -791,6 +822,31 @@ $eventImage = $eventImages[$event['nama_acara']] ?? 'asset/gambar/gedung1.jpg';
                 navMenu.classList.remove('active');
                 hamburger.classList.remove('active');
             }
+        });
+
+        // Set dynamic placeholder for kebutuhan tambahan based on event type
+        document.addEventListener('DOMContentLoaded', function() {
+            const kebutuhanTextarea = document.getElementById('kebutuhan_tambahan');
+            const eventType = '<?= $event['nama_acara'] ?>';
+            
+            let placeholder = '';
+            switch(eventType.toLowerCase()) {
+                case 'pernikahan':
+                    placeholder = 'Contoh: Dekorasi tema warna merah putih, live band, catering untuk 200 tamu, bunga pelaminan, fotografer, tenda VIP, sound system outdoor, dll.';
+                    break;
+                case 'rapat/meeting':
+                case 'rapat':
+                case 'meeting':
+                    placeholder = 'Contoh: Proyektor tambahan, flipchart, coffee break, setup meja U-shape, microphone wireless, webcam untuk meeting online, dll.';
+                    break;
+                case 'seminar':
+                    placeholder = 'Contoh: Layar proyektor besar, sound system berkualitas tinggi, podium khusus, area registrasi, snack break, banner backdrop, dll.';
+                    break;
+                default:
+                    placeholder = 'Contoh: Dekorasi khusus, catering, sound system tambahan, setup panggung, lighting khusus, dll.';
+            }
+            
+            kebutuhanTextarea.placeholder = placeholder;
         });
     </script>
 </body>

@@ -118,10 +118,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $days = $start_date->diff($end_date)->days + 1;
         $total_price = $event_pricing['price'] * $days;
         
+        // Get metode pembayaran and kebutuhan tambahan from form
+        $metode_pembayaran = $_POST['metode_pembayaran'] ?? '';
+        $kebutuhan_tambahan = $_POST['kebutuhan_tambahan'] ?? '';
+        
+        if (empty($metode_pembayaran)) {
+            throw new Exception("Silakan pilih metode pembayaran.");
+        }
+        
         // Insert booking
         $stmt = $pdo->prepare("
-            INSERT INTO pemesanan (id_penyewa, id_acara, tanggal_sewa, tanggal_selesai, durasi, total, tanggal_pesan, tipe_pesanan, status) 
-            VALUES (?, ?, ?, ?, ?, ?, NOW(), 'online', 'pending')
+            INSERT INTO pemesanan (id_penyewa, id_acara, tanggal_sewa, tanggal_selesai, durasi, total, metode_pembayaran, kebutuhan_tambahan, tanggal_pesan, tipe_pesanan, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'online', 'pending')
         ");
         
         $stmt->execute([
@@ -130,7 +138,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tanggal_mulai, 
             $tanggal_selesai, 
             $days,
-            $total_price
+            $total_price,
+            $metode_pembayaran,
+            $kebutuhan_tambahan
         ]);
         
         $booking_id = $pdo->lastInsertId();
@@ -200,79 +210,90 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             position: relative;
         }
         
-        .booking-header::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 20px solid #764ba2;
-        }
-        
         .booking-header h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
+            font-size: 2.5rem;
+            font-weight: 800;
             margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .booking-header p {
             font-size: 1.1rem;
             opacity: 0.9;
-            font-weight: 400;
         }
         
         .booking-body {
-            padding: 50px 40px;
+            padding: 40px 30px;
         }
         
         .summary-section {
-            background: linear-gradient(145deg, #f8f9ff 0%, #e8eeff 100%);
-            border-radius: 15px;
-            padding: 30px;
             margin-bottom: 30px;
-            border: 1px solid rgba(102, 126, 234, 0.1);
         }
         
         .event-info {
             display: flex;
             align-items: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 15px;
             margin-bottom: 25px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+            border: 2px solid rgba(102, 126, 234, 0.1);
         }
         
         .event-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 3rem;
+            color: #667eea;
             margin-right: 20px;
-            color: white;
-            font-size: 1.5rem;
-            animation: pulse 2s infinite;
+            min-width: 80px;
+            text-align: center;
         }
         
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
-            }
-            50% {
-                transform: scale(1.05);
-                box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
-            }
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
-            }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            min-width: 200px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .btn-secondary {
+            background: white;
+            border: 2px solid #e1e5e9;
+            color: #666;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            min-width: 200px;
+        }
+        
+        .btn-secondary:hover {
+            border-color: #667eea;
+            color: #667eea;
+            text-decoration: none;
+            transform: translateY(-2px);
         }
         
         .date-item {
@@ -400,53 +421,172 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         .form-control:focus {
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
             background: white;
         }
         
-        .action-buttons {
+        .payment-method-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+            border: 2px solid rgba(102, 126, 234, 0.1);
+        }
+        
+        /* Kebutuhan Tambahan Section */
+        .kebutuhan-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+            border: 2px solid rgba(102, 126, 234, 0.1);
+        }
+        
+        .kebutuhan-section h4 {
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 20px;
             display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .kebutuhan-content {
+            margin-top: 15px;
+        }
+        
+        .form-textarea {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            background: white;
+            transition: all 0.3s ease;
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.6;
+        }
+        
+        .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-textarea::placeholder {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .form-help {
+            display: block;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .payment-method-section h4 {
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .payment-method-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
-            margin-top: 40px;
-            flex-wrap: wrap;
+            margin-top: 15px;
         }
         
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
+        .payment-option {
+            border: 2px solid #e1e5e9;
             border-radius: 12px;
-            padding: 15px 30px;
-            font-weight: 600;
-            font-size: 1.1rem;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
             transition: all 0.3s ease;
-            flex: 1;
-            min-width: 200px;
+            background: white;
+            position: relative;
         }
         
-        .btn-primary:hover {
+        .payment-option:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
         
-        .btn-secondary {
-            background: #6c757d;
-            border: none;
-            border-radius: 12px;
-            padding: 15px 30px;
+        .payment-option.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+        
+        .payment-option input[type="radio"] {
+            display: none;
+        }
+        
+        .payment-icon {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .payment-name {
             font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            color: white;
+            color: #333;
+            margin-bottom: 5px;
         }
         
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+        .payment-desc {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .payment-option.selected .payment-icon {
+            color: #764ba2;
+        }
+        
+        .payment-option::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #e1e5e9;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-option.selected::after {
+            background: #667eea;
+            border-color: #667eea;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+            background-size: 12px;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .btn:disabled:hover {
+            transform: none !important;
+            box-shadow: none !important;
         }
         
         .alert {
-            border-radius: 12px;
+            border-radius: 15px;
             padding: 15px 20px;
             margin-bottom: 25px;
             border: none;
@@ -506,6 +646,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 min-width: auto;
                 width: 100%;
             }
+            
+            .payment-method-grid {
+                grid-template-columns: 1fr;
+            }
         }
         
         @media (max-width: 480px) {
@@ -522,6 +666,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             .price-breakdown {
+                padding: 20px 15px;
+            }
+            
+            .payment-method-section {
                 padding: 20px 15px;
             }
         }
@@ -610,13 +758,86 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                             
                             <!-- Booking Form -->
-                            <form method="POST" class="form-section">
-                                <input type="hidden" name="tanggal_mulai" value="<?= htmlspecialchars($tanggal_mulai_param) ?>">
+                            <form method="POST" class="form-section" id="bookingForm">
                                 <input type="hidden" name="tanggal_mulai" value="<?= htmlspecialchars($tanggal_mulai_param) ?>">
                                 <input type="hidden" name="tanggal_selesai" value="<?= htmlspecialchars($tanggal_selesai_param) ?>">
                                 
+                                <!-- Kebutuhan Tambahan Section -->
+                                <div class="kebutuhan-section">
+                                    <h4>
+                                        <i class="fas fa-clipboard-list"></i>
+                                        Kebutuhan Tambahan
+                                    </h4>
+                                    <div class="kebutuhan-content">
+                                        <textarea 
+                                            name="kebutuhan_tambahan" 
+                                            id="kebutuhan_tambahan" 
+                                            rows="4" 
+                                            placeholder="Tuliskan kebutuhan khusus untuk acara Anda (opsional)"
+                                            class="form-textarea"
+                                        ></textarea>
+                                        <small class="form-help">
+                                            Contoh: Dekorasi khusus, catering, sound system tambahan, dll.
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Payment Method Selection -->
+                                <div class="payment-method-section">
+                                    <h4>
+                                        <i class="fas fa-credit-card"></i>
+                                        Pilih Metode Pembayaran
+                                    </h4>
+                                    <div class="payment-method-grid">
+                                        <label class="payment-option" for="qris">
+                                            <input type="radio" name="metode_pembayaran" value="QRIS" id="qris" required>
+                                            <div class="payment-icon">
+                                                <i class="fas fa-qrcode"></i>
+                                            </div>
+                                            <div class="payment-name">QRIS</div>
+                                            <div class="payment-desc">Scan QR Code</div>
+                                        </label>
+                                        
+                                        <label class="payment-option" for="bca">
+                                            <input type="radio" name="metode_pembayaran" value="Transfer_BCA" id="bca" required>
+                                            <div class="payment-icon">
+                                                <i class="fas fa-university"></i>
+                                            </div>
+                                            <div class="payment-name">Transfer BCA</div>
+                                            <div class="payment-desc">Internet Banking</div>
+                                        </label>
+                                        
+                                        <label class="payment-option" for="bni">
+                                            <input type="radio" name="metode_pembayaran" value="Transfer_BNI" id="bni" required>
+                                            <div class="payment-icon">
+                                                <i class="fas fa-university"></i>
+                                            </div>
+                                            <div class="payment-name">Transfer BNI</div>
+                                            <div class="payment-desc">Internet Banking</div>
+                                        </label>
+                                        
+                                        <label class="payment-option" for="bri">
+                                            <input type="radio" name="metode_pembayaran" value="Transfer_BRI" id="bri" required>
+                                            <div class="payment-icon">
+                                                <i class="fas fa-university"></i>
+                                            </div>
+                                            <div class="payment-name">Transfer BRI</div>
+                                            <div class="payment-desc">Internet Banking</div>
+                                        </label>
+                                        
+                                        <label class="payment-option" for="mandiri">
+                                            <input type="radio" name="metode_pembayaran" value="Transfer_Mandiri" id="mandiri" required>
+                                            <div class="payment-icon">
+                                                <i class="fas fa-university"></i>
+                                            </div>
+                                            <div class="payment-name">Transfer Mandiri</div>
+                                            <div class="payment-desc">Internet Banking</div>
+                                        </label>
+                                    </div>
+                                </div>
+                                
                                 <div class="action-buttons">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
                                         <i class="fas fa-credit-card"></i> Lanjut ke Pembayaran
                                     </button>
                                     <a href="<?= $acara_type ?>.php" class="btn btn-secondary">
@@ -654,9 +875,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Payment method selection handling
+        document.querySelectorAll('input[name="metode_pembayaran"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                // Remove selected class from all options
+                document.querySelectorAll('.payment-option').forEach(function(option) {
+                    option.classList.remove('selected');
+                });
+                
+                // Add selected class to chosen option
+                this.closest('.payment-option').classList.add('selected');
+                
+                // Enable submit button
+                document.getElementById('submitBtn').disabled = false;
+            });
+        });
+        
         // Add loading animation when form is submitted
-        document.querySelector('form')?.addEventListener('submit', function(e) {
-            const submitBtn = this.querySelector('button[type="submit"]');
+        document.getElementById('bookingForm')?.addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            const selectedPayment = document.querySelector('input[name="metode_pembayaran"]:checked');
+            
+            if (!selectedPayment) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Pilih Metode Pembayaran',
+                    text: 'Silakan pilih metode pembayaran terlebih dahulu.',
+                    confirmButtonColor: '#667eea'
+                });
+                return;
+            }
+            
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
@@ -677,7 +927,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $(document).ready(function() {
             $('.booking-card').hide().fadeIn(800);
             $('.summary-section').css('opacity', 0).animate({opacity: 1}, 1000);
+            
+            // Dynamic placeholder for kebutuhan tambahan based on event type
+            updateKebutuhanPlaceholder();
         });
+        
+        // Function to update kebutuhan tambahan placeholder based on event type
+        function updateKebutuhanPlaceholder() {
+            const eventType = '<?= htmlspecialchars($acara_type) ?>'; // Get event type from PHP
+            const textarea = document.getElementById('kebutuhan_tambahan');
+            const helpText = document.querySelector('.kebutuhan-section .form-help');
+            
+            if (textarea && helpText) {
+                let placeholder = '';
+                let help = '';
+                
+                switch(eventType.toLowerCase()) {
+                    case 'pernikahan':
+                        placeholder = 'Contoh: Dekorasi pernikahan, bunga, fotografi, videografi, katering, musik, dll.';
+                        help = 'Dekorasi khusus, catering, musik, fotografi, atau kebutuhan lain untuk pernikahan Anda.';
+                        break;
+                    case 'seminar':
+                        placeholder = 'Contoh: Proyektor, microphone, sound system, AC, snack, coffee break, dll.';
+                        help = 'Proyektor, sound system, microphone, snack, atau fasilitas lain untuk seminar Anda.';
+                        break;
+                    case 'rapat':
+                    case 'meeting':
+                        placeholder = 'Contoh: Proyektor, flipchart, wifi, AC, snack, coffee break, dll.';
+                        help = 'Proyektor, flipchart, wifi, snack, atau fasilitas lain untuk meeting Anda.';
+                        break;
+                    default:
+                        placeholder = 'Tuliskan kebutuhan khusus untuk acara Anda (opsional)';
+                        help = 'Contoh: Dekorasi khusus, catering, sound system tambahan, dll.';
+                }
+                
+                textarea.placeholder = placeholder;
+                helpText.textContent = help;
+            }
+        }
     </script>
 </body>
 </html>

@@ -731,38 +731,19 @@ if (!isset($_SESSION['admin_logged_in'])) {
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
-            loadDashboardStats();
             initChart();
-            loadRecentActivity();
+            loadChartData();
+            setupChartFilters();
         });
-
-        // Load dashboard statistics
-        function loadDashboardStats() {
-            fetch('ajax/get_dashboard_stats.php')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error('Error:', data.error);
-                        return;
-                    }
-                    
-                    document.getElementById('totalPenyewa').textContent = data.total_penyewa || 0;
-                    document.getElementById('totalPemesanan').textContent = data.total_pemesanan || 0;
-                    document.getElementById('totalPendapatan').textContent = 
-                        new Intl.NumberFormat('id-ID', { 
-                            style: 'currency', 
-                            currency: 'IDR',
-                            minimumFractionDigits: 0
-                        }).format(data.total_pendapatan || 0);
-                })
-                .catch(error => {
-                    console.error('Error loading stats:', error);
-                });
-        }
 
         // Initialize chart
         function initChart() {
-            const ctx = document.getElementById('pemesananChart').getContext('2d');
+            const ctx = document.getElementById('pemesananChart');
+            
+            // Destroy existing chart if it exists
+            if (pemesananChart) {
+                pemesananChart.destroy();
+            }
             
             pemesananChart = new Chart(ctx, {
                 type: 'line',
@@ -822,8 +803,8 @@ if (!isset($_SESSION['admin_logged_in'])) {
         }
 
         // Load chart data
-        function loadChartData() {
-            fetch('ajax/get_chart_data.php')
+        function loadChartData(period = '6months') {
+            fetch(`ajax/get_chart_data.php?period=${period}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
@@ -840,89 +821,29 @@ if (!isset($_SESSION['admin_logged_in'])) {
                 });
         }
 
-        // Load recent activity
-        function loadRecentActivity() {
-            fetch('ajax/get_recent_activity.php')
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById('recentActivity');
+        // Setup chart filter buttons
+        function setupChartFilters() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
                     
-                    if (data.error) {
-                        container.innerHTML = '<div class="loading"><p>Error loading activity</p></div>';
-                        return;
+                    // Determine period based on button text
+                    let period = '6months';
+                    if (this.textContent === '1 Tahun') {
+                        period = '1year';
+                    } else if (this.textContent === 'Semua') {
+                        period = 'all';
                     }
                     
-                    if (data.length === 0) {
-                        container.innerHTML = '<div class="loading"><p>Tidak ada aktivitas terbaru</p></div>';
-                        return;
-                    }
-                    
-                    let html = '';
-                    data.forEach(activity => {
-                        const iconClass = getActivityIcon(activity.type);
-                        const iconColor = getActivityColor(activity.type);
-                        
-                        html += `
-                            <div class="activity-item">
-                                <div class="activity-icon" style="background: ${iconColor}">
-                                    <i class="${iconClass}"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-text">${activity.description}</div>
-                                    <div class="activity-time">${formatTime(activity.created_at)}</div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    container.innerHTML = html;
-                })
-                .catch(error => {
-                    console.error('Error loading activity:', error);
-                    document.getElementById('recentActivity').innerHTML = 
-                        '<div class="loading"><p>Error loading activity</p></div>';
+                    // Reload chart with new period
+                    loadChartData(period);
                 });
-        }
-
-        // Helper functions
-        function getActivityIcon(type) {
-            const icons = {
-                'booking': 'fas fa-calendar-plus',
-                'payment': 'fas fa-money-bill',
-                'cancellation': 'fas fa-times-circle',
-                'registration': 'fas fa-user-plus',
-                'default': 'fas fa-info-circle'
-            };
-            return icons[type] || icons.default;
-        }
-
-        function getActivityColor(type) {
-            const colors = {
-                'booking': '#10b981',
-                'payment': '#f59e0b',
-                'cancellation': '#ef4444',
-                'registration': '#6366f1',
-                'default': '#64748b'
-            };
-            return colors[type] || colors.default;
-        }
-
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            const now = new Date();
-            const diff = now - date;
-            
-            const minutes = Math.floor(diff / (1000 * 60));
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            
-            if (minutes < 60) {
-                return `${minutes} menit yang lalu`;
-            } else if (hours < 24) {
-                return `${hours} jam yang lalu`;
-            } else {
-                return `${days} hari yang lalu`;
-            }
+            });
         }
 
         // Mobile menu functions
@@ -942,14 +863,11 @@ if (!isset($_SESSION['admin_logged_in'])) {
             overlay.classList.remove('active');
         }
 
-        // Chart filter functionality
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                // Add filter logic here
-                loadChartData();
-            });
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initChart();
+            loadChartData();
+            setupChartFilters();
         });
     </script>
 </body>

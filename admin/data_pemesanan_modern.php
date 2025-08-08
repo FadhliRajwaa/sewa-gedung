@@ -674,10 +674,6 @@ if (!isset($_SESSION['admin_logged_in'])) {
             <!-- Page Header -->
             <div class="page-header">
                 <h1 class="page-title">Data Pemesanan</h1>
-                <a href="pemesanan_add.php" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Tambah Pemesanan
-                </a>
             </div>
 
             <!-- Stats Grid -->

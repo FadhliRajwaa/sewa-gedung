@@ -25,7 +25,7 @@ session_start();
 
         /* Modern Navbar */
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
+            background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
             backdrop-filter: blur(20px);
             padding: 1rem 0;
             position: fixed;
@@ -58,7 +58,7 @@ session_start();
         .nav-logo .logo-text {
             font-size: 18px;
             font-weight: 700;
-            color: #8B4513;
+            color: #ffffff;
         }
 
         .nav-menu {
@@ -69,7 +69,7 @@ session_start();
         }
 
         .nav-link {
-            color: #333;
+            color: #ffffff !important;
             text-decoration: none;
             font-weight: 500;
             font-size: 15px;
@@ -79,15 +79,15 @@ session_start();
         }
 
         .nav-link:hover {
-            color: #8B4513;
-            background: rgba(139, 69, 19, 0.1);
+            color: #F4E4BC !important;
+            background: rgba(255, 255, 255, 0.2);
             text-decoration: none;
             transform: translateY(-2px);
         }
 
         .nav-link.active {
-            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
-            color: white;
+            background: rgba(255, 255, 255, 0.3);
+            color: #F4E4BC !important;
         }
 
         .nav-toggle {
@@ -152,9 +152,19 @@ session_start();
             transition: all 0.3s ease;
         }
 
+        .step.panduan-penyewa {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.2);
+        }
+
         .step:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .step.panduan-penyewa:hover {
+            box-shadow: 0 15px 30px rgba(255, 193, 7, 0.3);
         }
 
         .step-number {
@@ -241,6 +251,7 @@ session_start();
             <ul class="nav-menu" id="navMenu">
                 <?php if (isset($_SESSION['id_penyewa'])): ?>
                     <li><a href="dashboard_user.php" class="nav-link"><i class="fas fa-home"></i> Beranda</a></li>
+                    <li><a href="gedung.php" class="nav-link"><i class="fas fa-building"></i> Pilih Acara</a></li>
                     <li><a href="acara_saya.php" class="nav-link"><i class="fas fa-calendar-alt"></i> Acara Saya</a></li>
                     <li><a href="panduan.php" class="nav-link active"><i class="fas fa-book"></i> Panduan</a></li>
                     <li><a href="akun.php" class="nav-link"><i class="fas fa-user"></i> Akun</a></li>
@@ -276,55 +287,55 @@ session_start();
                     </p>
                 </div>
 
-                <div class="step">
+                <div class="step panduan-penyewa">
                     <i class="fas fa-user-plus step-icon"></i>
                     <div class="step-number">1</div>
-                    <h3 class="step-title">Registrasi Akun</h3>
+                    <h3 class="step-title">Registrasi Akun Penyewa</h3>
                     <p class="step-description">
                         Daftarkan akun terlebih dahulu sebagai penyewa umum atau instansi. Isi data diri Anda dengan lengkap dan benar untuk memudahkan proses verifikasi.
                     </p>
                 </div>
 
-                <div class="step">
+                <div class="step panduan-penyewa">
                     <i class="fas fa-envelope-circle-check step-icon"></i>
                     <div class="step-number">2</div>
-                    <h3 class="step-title">Verifikasi Email</h3>
+                    <h3 class="step-title">Verifikasi Email Penyewa</h3>
                     <p class="step-description">
                         Verifikasi alamat email Anda dengan kode verifikasi yang dikirim. Pastikan email yang digunakan aktif untuk menerima notifikasi pemesanan.
                     </p>
                 </div>
 
-                <div class="step">
+                <div class="step panduan-penyewa">
                     <i class="fas fa-sign-in-alt step-icon"></i>
                     <div class="step-number">3</div>
-                    <h3 class="step-title">Login ke Akun</h3>
+                    <h3 class="step-title">Login ke Dashboard Penyewa</h3>
                     <p class="step-description">
                         Masuk ke akun Anda menggunakan username dan password yang telah didaftarkan. Setelah login, Anda dapat mengakses dashboard user.
                     </p>
                 </div>
 
-                <div class="step">
+                <div class="step panduan-penyewa">
                     <i class="fas fa-calendar-check step-icon"></i>
                     <div class="step-number">4</div>
-                    <h3 class="step-title">Pilih dan Pesan Acara</h3>
+                    <h3 class="step-title">Pilih dan Pesan Acara untuk Penyewa</h3>
                     <p class="step-description">
                         Pilih jenis acara yang sesuai (Pernikahan, Rapat, atau Seminar). Isi formulir pemesanan dengan detail tanggal, durasi, dan kebutuhan tambahan.
                     </p>
                 </div>
 
-                <div class="step">
+                <div class="step panduan-penyewa">
                     <i class="fas fa-credit-card step-icon"></i>
                     <div class="step-number">5</div>
-                    <h3 class="step-title">Lakukan Pembayaran</h3>
+                    <h3 class="step-title">Pembayaran Penyewa</h3>
                     <p class="step-description">
                         Transfer pembayaran sesuai total biaya ke rekening yang tersedia. Upload bukti pembayaran untuk verifikasi oleh admin.
                     </p>
                 </div>
 
-                <div class="step">
+                <div class="step panduan-penyewa">
                     <i class="fas fa-check-circle step-icon"></i>
                     <div class="step-number">6</div>
-                    <h3 class="step-title">Konfirmasi & Cetak Nota</h3>
+                    <h3 class="step-title">Konfirmasi & Cetak Nota Penyewa</h3>
                     <p class="step-description">
                         Setelah pembayaran dikonfirmasi lunas oleh admin, Anda dapat mencetak nota sebagai bukti sah pemesanan gedung acara.
                     </p>

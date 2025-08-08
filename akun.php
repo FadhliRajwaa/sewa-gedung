@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         /* Modern Navbar */
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
+            background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
             backdrop-filter: blur(20px);
             padding: 1rem 0;
             position: fixed;
@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .nav-logo .logo-text {
             font-size: 18px;
             font-weight: 700;
-            color: #8B4513;
+            color: #ffffff;
         }
 
         .nav-menu {
@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .nav-link {
-            color: #333;
+            color: #ffffff !important;
             text-decoration: none;
             font-weight: 500;
             font-size: 15px;
@@ -130,15 +130,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .nav-link:hover {
-            color: #8B4513;
-            background: rgba(139, 69, 19, 0.1);
+            color: #F4E4BC !important;
+            background: rgba(255, 255, 255, 0.2);
             text-decoration: none;
             transform: translateY(-2px);
         }
 
         .nav-link.active {
-            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
-            color: white;
+            background: rgba(255, 255, 255, 0.3);
+            color: #F4E4BC !important;
         }
 
         .nav-toggle {
@@ -151,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .nav-toggle span {
             width: 25px;
             height: 3px;
-            background: #8B4513;
+            background: #ffffff;
             border-radius: 2px;
             transition: all 0.3s ease;
         }
@@ -400,6 +400,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <ul class="nav-menu" id="navMenu">
                 <li><a href="dashboard_user.php" class="nav-link"><i class="fas fa-home"></i> Beranda</a></li>
+                <li><a href="gedung.php" class="nav-link"><i class="fas fa-building"></i> Pilih Acara</a></li>
                 <li><a href="acara_saya.php" class="nav-link"><i class="fas fa-calendar-alt"></i> Acara Saya</a></li>
                 <li><a href="panduan.php" class="nav-link"><i class="fas fa-book"></i> Panduan</a></li>
                 <li><a href="akun.php" class="nav-link active"><i class="fas fa-user"></i> Akun</a></li>

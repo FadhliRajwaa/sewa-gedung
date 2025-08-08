@@ -507,6 +507,44 @@ if (!isset($_SESSION['admin_logged_in'])) {
             justify-content: center;
         }
 
+        /* Action Buttons */
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            margin: 0 2px;
+            min-width: 36px;
+            height: 36px;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-detail {
+            background: linear-gradient(135deg, var(--accent) 0%, #0891b2 100%);
+            color: var(--white);
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, var(--warning) 0%, #ea580c 100%);
+            color: var(--white);
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            color: var(--white);
+        }
+
         /* Responsive */
         @media (max-width: 1024px) {
             .main-content {
@@ -674,10 +712,6 @@ if (!isset($_SESSION['admin_logged_in'])) {
             <!-- Page Header -->
             <div class="page-header">
                 <h1 class="page-title">Data Pemesanan</h1>
-                <a href="pemesanan_add.php" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Tambah Pemesanan
-                </a>
             </div>
 
             <!-- Stats Grid -->
@@ -719,28 +753,30 @@ if (!isset($_SESSION['admin_logged_in'])) {
             <div class="filter-section">
                 <div class="filter-grid">
                     <div class="filter-group">
-                        <label class="filter-label">Tanggal Mulai</label>
-                        <input type="date" class="filter-input" id="startDate">
+                        <label class="filter-label">Cari</label>
+                        <input type="text" class="filter-input" id="searchInput" placeholder="Cari nama penyewa, acara, dll..." oninput="performSearch()">
                     </div>
                     <div class="filter-group">
-                        <label class="filter-label">Tanggal Akhir</label>
-                        <input type="date" class="filter-input" id="endDate">
+                        <label class="filter-label">Tanggal Mulai</label>
+                        <input type="date" class="filter-input" id="startDate" onchange="applyFilter()">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Tanggal Selesai</label>
+                        <input type="date" class="filter-input" id="endDate" onchange="applyFilter()">
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Status</label>
-                        <select class="filter-input" id="statusFilter">
+                        <select class="filter-input" id="statusFilter" onchange="applyFilter()">
                             <option value="">Semua Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="confirmed">Confirmed</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
+                            <option value="Belum Lunas">Belum Lunas</option>
+                            <option value="Lunas">Lunas</option>
                         </select>
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Aksi</label>
-                        <button class="btn btn-primary" onclick="applyFilter()">
-                            <i class="fas fa-filter"></i>
-                            Filter
+                        <button class="btn btn-primary" onclick="resetFilter()">
+                            <i class="fas fa-refresh"></i>
+                            Reset
                         </button>
                     </div>
                 </div>
@@ -757,11 +793,13 @@ if (!isset($_SESSION['admin_logged_in'])) {
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Penyewa</th>
+                                <th>Nama Penyewa</th>
                                 <th>Acara</th>
-                                <th>Tanggal</th>
-                                <th>Total</th>
-                                <th>Status Pembayaran</th>
+                                <th>Tanggal Mulai</th>
+                                <th>Tanggal Selesai</th>
+                                <th>Total Biaya</th>
+                                <th>Kebutuhan Tambahan</th>
+                                <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -777,6 +815,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
                                         p.metode_pembayaran,
                                         p.tanggal_pesan,
                                         p.tipe_pesanan,
+                                        p.kebutuhan_tambahan,
                                         CASE 
                                             WHEN py.tipe_penyewa = 'instansi' THEN py.nama_instansi
                                             ELSE py.nama_lengkap
@@ -805,37 +844,53 @@ if (!isset($_SESSION['admin_logged_in'])) {
                                     echo "<tr>";
                                     echo "<td><strong>#{$row['id_pemesanan']}</strong></td>";
                                     echo "<td>";
-                                    echo "<div class='customer-info'>";
                                     echo "<strong>{$row['nama_penyewa']}</strong>";
                                     echo "<br><small>{$row['email_penyewa']}</small>";
                                     echo "<br><span class='badge {$tipe_class}'>" . ucfirst($row['tipe_penyewa']) . "</span>";
-                                    echo "</div>";
                                     echo "</td>";
                                     echo "<td>";
                                     echo "<strong>{$row['nama_acara']}</strong>";
                                     echo "<br><small>{$row['durasi']} hari</small>";
                                     echo "</td>";
-                                    echo "<td>";
+                                    echo "<td data-date='{$row['tanggal_sewa']}'>";
                                     echo "<strong>" . date('d M Y', strtotime($row['tanggal_sewa'])) . "</strong>";
-                                    if ($row['tanggal_selesai'] != $row['tanggal_sewa']) {
-                                        echo "<br><small>s/d " . date('d M Y', strtotime($row['tanggal_selesai'])) . "</small>";
-                                    }
+                                    echo "</td>";
+                                    echo "<td data-date='{$row['tanggal_selesai']}'>";
+                                    echo "<strong>" . date('d M Y', strtotime($row['tanggal_selesai'])) . "</strong>";
                                     echo "</td>";
                                     echo "<td><strong>Rp " . number_format($row['total'], 0, ',', '.') . "</strong></td>";
+                                    echo "<td>";
+                                    if (!empty($row['kebutuhan_tambahan'])) {
+                                        $kebutuhan = htmlspecialchars($row['kebutuhan_tambahan']);
+                                        if (strlen($kebutuhan) > 50) {
+                                            echo "<span title='{$kebutuhan}'>" . substr($kebutuhan, 0, 47) . "...</span>";
+                                        } else {
+                                            echo $kebutuhan;
+                                        }
+                                    } else {
+                                        echo "<span style='color: #999; font-style: italic;'>Tidak ada</span>";
+                                    }
+                                    echo "</td>";
                                     echo "<td><span class='badge {$status_class}'>{$status_pembayaran}</span></td>";
                                     echo "<td>";
                                     echo "<button class='btn-action btn-detail' onclick='viewDetail({$row['id_pemesanan']})' title='Detail'>";
                                     echo "<i class='fas fa-eye'></i>";
                                     echo "</button>";
-                                    echo "<button class='btn-action btn-edit' onclick='editPemesanan({$row['id_pemesanan']})' title='Edit'>";
+                                    echo "<button class='btn-action btn-edit' onclick='editPemesanan({$row['id_pemesanan']})' title='Edit Pemesanan'>";
                                     echo "<i class='fas fa-edit'></i>";
+                                    echo "</button>";
+                                    echo "<button class='btn-action btn-print' onclick='cetakNota({$row['id_pemesanan']})' title='Cetak Nota'>";
+                                    echo "<i class='fas fa-print'></i>";
+                                    echo "</button>";
+                                    echo "<button class='btn-action btn-delete' onclick='deletePemesanan({$row['id_pemesanan']})' title='Hapus'>";
+                                    echo "<i class='fas fa-trash'></i>";
                                     echo "</button>";
                                     echo "</td>";
                                     echo "</tr>";
                                 }
                             } else {
                                 echo "<tr>";
-                                echo "<td colspan='7' class='empty-state'>";
+                                echo "<td colspan='9' class='empty-state'>";
                                 echo "<div class='empty-icon'><i class='fas fa-calendar-times'></i></div>";
                                 echo "<div class='empty-text'>Belum ada data pemesanan</div>";
                                 echo "</td>";
@@ -868,102 +923,96 @@ if (!isset($_SESSION['admin_logged_in'])) {
         });
 
         function loadData() {
-            fetch('ajax/get_pemesanan.php')
-                .then(response => response.json())
-                .then(data => {
-                    allData = data;
-                    filteredData = data;
-                    displayData(data);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    displayError();
-                });
+            // For now, use the PHP data directly instead of AJAX
+            const tableRows = document.querySelectorAll('#pemesananTable tbody tr');
+            allData = [];
+            
+            tableRows.forEach(row => {
+                const cells = row.cells;
+                if (cells.length > 1) {
+                    const idMatch = cells[0].textContent.match(/#(\d+)/);
+                    const id = idMatch ? idMatch[1] : '';
+                    
+                    // Extract raw date values for proper filtering
+                    const tanggalSewaRaw = cells[3].getAttribute('data-date') || cells[3].textContent;
+                    const tanggalSelesaiRaw = cells[4].getAttribute('data-date') || cells[4].textContent;
+                    
+                    allData.push({
+                        id_pemesanan: id,
+                        nama_penyewa: cells[1].querySelector('strong')?.textContent || '',
+                        email_penyewa: cells[1].querySelector('small')?.textContent || '',
+                        tipe_penyewa: cells[1].querySelector('.badge')?.textContent || '',
+                        nama_acara: cells[2].querySelector('strong')?.textContent || '',
+                        durasi: cells[2].querySelector('small')?.textContent || '',
+                        tanggal_sewa: cells[3].querySelector('strong')?.textContent || '',
+                        tanggal_sewa_raw: tanggalSewaRaw,
+                        tanggal_selesai: cells[4].querySelector('strong')?.textContent || '',
+                        tanggal_selesai_raw: tanggalSelesaiRaw,
+                        total: cells[5].textContent.replace(/[^\d]/g, ''),
+                        status_pembayaran: cells[6].querySelector('.badge')?.textContent || ''
+                    });
+                }
+            });
+            
+            filteredData = allData;
+            updateMobileCards();
+        }
+
+        function editPemesanan(id) {
+            window.open(`pemesanan_edit.php?id=${id}`, '_blank');
         }
 
         function loadStats() {
-            fetch('ajax/get_pemesanan_stats.php')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('totalPemesanan').textContent = data.total || 0;
-                    document.getElementById('confirmedCount').textContent = data.confirmed || 0;
-                    document.getElementById('pendingCount').textContent = data.pending || 0;
+            // Calculate stats from PHP data
+            const rows = document.querySelectorAll('#pemesananTable tbody tr');
+            let total = 0;
+            let confirmed = 0;
+            let pending = 0;
+            let revenue = 0;
+            
+            rows.forEach(row => {
+                const cells = row.cells;
+                if (cells.length > 1) {
+                    total++;
                     
-                    const revenue = data.total_revenue || 0;
-                    document.getElementById('totalRevenue').textContent = 
-                        new Intl.NumberFormat('id-ID', { 
-                            style: 'currency', 
-                            currency: 'IDR',
-                            minimumFractionDigits: 0
-                        }).format(revenue);
-                })
-                .catch(error => console.error('Error loading stats:', error));
+                    const status = cells[6].querySelector('.badge')?.textContent || '';
+                    if (status === 'Lunas') {
+                        confirmed++;
+                        // Extract revenue
+                        const totalText = cells[5].textContent;
+                        const amount = parseInt(totalText.replace(/[^\d]/g, '')) || 0;
+                        revenue += amount;
+                    } else {
+                        pending++;
+                    }
+                }
+            });
+            
+            document.getElementById('totalPemesanan').textContent = total;
+            document.getElementById('confirmedCount').textContent = confirmed;
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('totalRevenue').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(revenue);
         }
 
-        function displayData(data) {
-            const tbody = document.querySelector('#pemesananTable tbody');
+        function updateMobileCards() {
             const mobileContainer = document.querySelector('#mobileCards');
             
-            tbody.innerHTML = '';
-            mobileContainer.innerHTML = '';
-            
-            if (data.error) {
-                displayError(data.error);
+            if (filteredData.length === 0) {
+                mobileContainer.innerHTML = `<div class="empty-state">
+                    <i class="fas fa-calendar-alt"></i><br>
+                    Belum ada data pemesanan
+                </div>`;
                 return;
             }
             
-            if (data.length === 0) {
-                displayEmpty();
-                return;
-            }
-            
-            // Desktop table
-            let tableHTML = '';
-            data.forEach(pemesanan => {
-                const statusClass = getStatusClass(pemesanan.status_pembayaran);
-                const formattedTotal = new Intl.NumberFormat('id-ID', { 
-                    style: 'currency', 
-                    currency: 'IDR',
-                    minimumFractionDigits: 0
-                }).format(pemesanan.total || 0);
-                
-                tableHTML += `
-                    <tr>
-                        <td><strong>#${pemesanan.id_pemesanan}</strong></td>
-                        <td>${pemesanan.nama_penyewa || 'N/A'}</td>
-                        <td>${pemesanan.nama_acara || 'N/A'}</td>
-                        <td>${formatDate(pemesanan.tanggal_sewa)}</td>
-                        <td><strong>${formattedTotal}</strong></td>
-                        <td>
-                            <span class="badge ${statusClass}">
-                                ${pemesanan.status_pembayaran || 'Pending'}
-                            </span>
-                        </td>
-                        <td>
-                            <a href="pemesanan_view.php?id=${pemesanan.id_pemesanan}" class="btn btn-info btn-sm" title="Lihat Detail">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="pemesanan_edit.php?id=${pemesanan.id_pemesanan}" class="btn btn-warning btn-sm" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <button onclick="deletePemesanan(${pemesanan.id_pemesanan})" class="btn btn-danger btn-sm" title="Hapus">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = tableHTML;
-
-            // Mobile cards
             let mobileHTML = '';
-            data.forEach(pemesanan => {
+            filteredData.forEach(pemesanan => {
                 const statusClass = getStatusClass(pemesanan.status_pembayaran);
                 const formattedTotal = new Intl.NumberFormat('id-ID', { 
                     style: 'currency', 
                     currency: 'IDR',
                     minimumFractionDigits: 0
-                }).format(pemesanan.total || 0);
+                }).format(parseInt(pemesanan.total) || 0);
                 
                 mobileHTML += `
                     <div class="mobile-card">
@@ -977,12 +1026,24 @@ if (!isset($_SESSION['admin_logged_in'])) {
                                 <span class="mobile-field-value">${pemesanan.nama_penyewa || 'N/A'}</span>
                             </div>
                             <div class="mobile-field">
+                                <span class="mobile-field-label">Email:</span>
+                                <span class="mobile-field-value">${pemesanan.email_penyewa || 'N/A'}</span>
+                            </div>
+                            <div class="mobile-field">
+                                <span class="mobile-field-label">Tipe:</span>
+                                <span class="mobile-field-value">${pemesanan.tipe_penyewa || 'N/A'}</span>
+                            </div>
+                            <div class="mobile-field">
                                 <span class="mobile-field-label">Tanggal:</span>
-                                <span class="mobile-field-value">${formatDate(pemesanan.tanggal_sewa)}</span>
+                                <span class="mobile-field-value">${pemesanan.tanggal_sewa || 'N/A'}</span>
                             </div>
                             <div class="mobile-field">
                                 <span class="mobile-field-label">Total:</span>
                                 <span class="mobile-field-value"><strong>${formattedTotal}</strong></span>
+                            </div>
+                            <div class="mobile-field">
+                                <span class="mobile-field-label">Kebutuhan Tambahan:</span>
+                                <span class="mobile-field-value">${pemesanan.kebutuhan_tambahan ? (pemesanan.kebutuhan_tambahan.length > 50 ? pemesanan.kebutuhan_tambahan.substring(0, 50) + '...' : pemesanan.kebutuhan_tambahan) : 'Tidak ada'}</span>
                             </div>
                             <div class="mobile-field">
                                 <span class="mobile-field-label">Status:</span>
@@ -992,13 +1053,16 @@ if (!isset($_SESSION['admin_logged_in'])) {
                             </div>
                         </div>
                         <div class="mobile-actions">
-                            <a href="pemesanan_view.php?id=${pemesanan.id_pemesanan}" class="btn btn-info btn-sm">
+                            <button class="btn-action btn-detail" onclick="viewDetail(${pemesanan.id_pemesanan})" title="Detail">
                                 <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="pemesanan_edit.php?id=${pemesanan.id_pemesanan}" class="btn btn-warning btn-sm">
+                            </button>
+                            <button class="btn-action btn-edit" onclick="editPemesanan(${pemesanan.id_pemesanan})" title="Edit">
                                 <i class="fas fa-edit"></i>
-                            </a>
-                            <button onclick="deletePemesanan(${pemesanan.id_pemesanan})" class="btn btn-danger btn-sm">
+                            </button>
+                            <button class="btn-action btn-print" onclick="cetakNota(${pemesanan.id_pemesanan})" title="Cetak">
+                                <i class="fas fa-print"></i>
+                            </button>
+                            <button class="btn-action btn-delete" onclick="deletePemesanan(${pemesanan.id_pemesanan})" title="Hapus">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -1067,30 +1131,133 @@ if (!isset($_SESSION['admin_logged_in'])) {
         }
 
         function applyFilter() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             const status = document.getElementById('statusFilter').value;
             
             filteredData = allData.filter(item => {
+                let searchMatch = true;
                 let dateMatch = true;
                 let statusMatch = true;
                 
+                // Search filter
+                if (searchInput) {
+                    searchMatch = (
+                        item.nama_penyewa?.toLowerCase().includes(searchInput) ||
+                        item.nama_acara?.toLowerCase().includes(searchInput) ||
+                        item.email_penyewa?.toLowerCase().includes(searchInput) ||
+                        item.id_pemesanan?.toString().includes(searchInput)
+                    );
+                }
+                
+                // Date filter
                 if (startDate && item.tanggal_sewa) {
-                    dateMatch = new Date(item.tanggal_sewa) >= new Date(startDate);
+                    const itemDate = new Date(item.tanggal_sewa_raw || item.tanggal_sewa);
+                    const filterDate = new Date(startDate);
+                    dateMatch = itemDate >= filterDate;
                 }
                 
-                if (endDate && item.tanggal_sewa && dateMatch) {
-                    dateMatch = new Date(item.tanggal_sewa) <= new Date(endDate);
+                if (endDate && dateMatch && item.tanggal_selesai) {
+                    const itemDate = new Date(item.tanggal_selesai_raw || item.tanggal_selesai);
+                    const filterDate = new Date(endDate);
+                    dateMatch = itemDate <= filterDate;
                 }
                 
+                // Status filter
                 if (status) {
-                    statusMatch = item.status_pembayaran?.toLowerCase() === status.toLowerCase();
+                    statusMatch = item.status_pembayaran === status;
                 }
                 
-                return dateMatch && statusMatch;
+                return searchMatch && dateMatch && statusMatch;
             });
             
-            displayData(filteredData);
+            updateTableView();
+            updateMobileCards();
+        }
+
+        function resetFilter() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('statusFilter').value = '';
+            
+            filteredData = allData;
+            updateTableView();
+            updateMobileCards();
+        }
+
+        function performSearch() {
+            setTimeout(applyFilter, 300); // Debounce search
+        }
+
+        function updateTableView() {
+            const tbody = document.querySelector('#pemesananTable tbody');
+            
+            if (filteredData.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="8" class="empty-state">
+                        <i class="fas fa-calendar-alt"></i><br>
+                        Tidak ada data yang sesuai dengan filter
+                    </td></tr>
+                `;
+                return;
+            }
+            
+            let tableHTML = '';
+            filteredData.forEach(item => {
+                const statusClass = getStatusClass(item.status_pembayaran);
+                const tipeClass = (item.tipe_penyewa === 'instansi') ? 'badge-info' : 'badge-primary';
+                const formattedTotal = new Intl.NumberFormat('id-ID', { 
+                    style: 'currency', 
+                    currency: 'IDR',
+                    minimumFractionDigits: 0
+                }).format(parseInt(item.total) || 0);
+                
+                tableHTML += `
+                    <tr>
+                        <td><strong>#${item.id_pemesanan}</strong></td>
+                        <td>
+                            <strong>${item.nama_penyewa}</strong><br>
+                            <small>${item.email_penyewa}</small><br>
+                            <span class="badge ${tipeClass}">${item.tipe_penyewa}</span>
+                        </td>
+                        <td>
+                            <strong>${item.nama_acara}</strong><br>
+                            <small>${item.durasi}</small>
+                        </td>
+                        <td><strong>${item.tanggal_sewa}</strong></td>
+                        <td><strong>${item.tanggal_selesai}</strong></td>
+                        <td><strong>${formattedTotal}</strong></td>
+                        <td>${item.kebutuhan_tambahan ? (item.kebutuhan_tambahan.length > 30 ? item.kebutuhan_tambahan.substring(0, 30) + '...' : item.kebutuhan_tambahan) : 'Tidak ada'}</td>
+                        <td><span class="badge ${statusClass}">${item.status_pembayaran}</span></td>
+                        <td>
+                            <button class="btn-action btn-detail" onclick="viewDetail(${item.id_pemesanan})" title="Detail">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-action btn-edit" onclick="editPemesanan(${item.id_pemesanan})" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-print" onclick="cetakNota(${item.id_pemesanan})" title="Cetak">
+                                <i class="fas fa-print"></i>
+                            </button>
+                            <button class="btn-action btn-delete" onclick="deletePemesanan(${item.id_pemesanan})" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = tableHTML;
+        }
+
+        function viewDetail(id) {
+            window.open(`pemesanan_view.php?id=${id}`, '_blank');
+        }
+
+        function cetakNota(id) {
+            window.open(`../cetak_nota.php?id=${id}`, '_blank');
         }
 
         function deletePemesanan(id) {
@@ -1134,6 +1301,12 @@ if (!isset($_SESSION['admin_logged_in'])) {
             sidebar.classList.remove('active');
             overlay.classList.remove('active');
         }
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            loadStats();
+        });
     </script>
 </body>
 </html>

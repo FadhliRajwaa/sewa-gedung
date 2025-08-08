@@ -16,7 +16,10 @@ try {
                      email, 
                      no_telepon as telepon,
                      alamat, 
-                     tipe_penyewa as jenis,
+                     CASE 
+                         WHEN tipe_penyewa = 'instansi' THEN 'instansi'
+                         ELSE 'umum'
+                     END as jenis,
                      email_terverifikasi
               FROM penyewa 
               ORDER BY id_penyewa DESC";

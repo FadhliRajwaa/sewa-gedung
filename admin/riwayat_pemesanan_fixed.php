@@ -13,6 +13,621 @@ if (!isset($_SESSION['admin_logged_in'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Riwayat Pemesanan - Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --gray: #64748b;
+            --gray-light: #f1f5f9;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, var(--gray-light) 0%, #e0e7ff 100%);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+        }
+
+        .sidebar-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 0;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            padding: 0 16px;
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray);
+            margin-bottom: 8px;
+            padding: 0 12px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--dark);
+            text-decoration: none;
+            border-radius: var(--radius);
+            margin-bottom: 4px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background: var(--gray-light);
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+            box-shadow: var(--shadow);
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 32px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: var(--white);
+            padding: 24px 32px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 32px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            color: var(--gray);
+            font-size: 16px;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: var(--white);
+            padding: 24px 32px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .filter-input {
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: var(--white);
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Table */
+        .table-container {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 24px 32px;
+            background: var(--gray-light);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--gray-light);
+            font-weight: 600;
+            color: var(--dark);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tbody tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .badge-primary {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .badge-info {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--accent);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1001;
+                background: var(--white);
+                border: none;
+                width: 48px;
+                height: 48px;
+                border-radius: var(--radius);
+                box-shadow: var(--shadow);
+                color: var(--dark);
+                font-size: 18px;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-container {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 12px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" style="display: none;">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fas fa-building"></i> Admin Panel</h1>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="dashboard.php" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Management</div>
+                    <a href="data_penyewa.php" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        <span>Data Penyewa</span>
+                    </a>
+                    <a href="data_pemesanan.php" class="nav-link">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Data Pemesanan</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Reports</div>
+                    <a href="riwayat_pemesanan_fixed.php" class="nav-link active">
+                        <i class="fas fa-history"></i>
+                        <span>Riwayat Pemesanan</span>
+                    </a>
+                    <a href="laporan_penyewaan.php" class="nav-link">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Laporan Penyewaan</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Settings</div>
+                    <a href="akun_admin.php" class="nav-link">
+                        <i class="fas fa-user-cog"></i>
+                        <span>Akun Admin</span>
+                    </a>
+                    <a href="logout.php" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Riwayat Pemesanan</h1>
+                <p class="page-subtitle">Histori lengkap semua pemesanan gedung</p>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">Cari</label>
+                        <input type="text" class="filter-input" id="searchInput" placeholder="Cari nama penyewa, acara, dll...">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Tanggal Mulai</label>
+                        <input type="date" class="filter-input" id="startDate">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Tanggal Acara</label>
+                        <input type="date" class="filter-input" id="eventDate">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Tipe Penyewa</label>
+                        <select class="filter-input" id="tipeFilter">
+                            <option value="">Semua Tipe</option>
+                            <option value="umum">Umum</option>
+                            <option value="instansi">Instansi</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Aksi</label>
+                        <button class="btn btn-primary" onclick="applyFilter()">
+                            <i class="fas fa-filter"></i>
+                            Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Riwayat Pemesanan</h3>
+                </div>
+                
+                <div class="table-responsive">
+                    <table id="riwayatTable">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>ID Penyewa</th>
+                                <th>ID Pemesan</th>
+                                <th>Tipe Penyewa</th>
+                                <th>Nama Penyewa</th>
+                                <th>Acara</th>
+                                <th>Tanggal Mulai</th>
+                                <th>Tanggal Selesai</th>
+                                <th>Total Biaya</th>
+                                <th>Metode Pembayaran</th>
+                                <th>Kebutuhan Tambahan</th>
+                                <th>Status</th>
+                                <th>Tanggal Dibuat Pemesanan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $query = "SELECT 
+                                        p.id_pemesanan,
+                                        p.id_penyewa,
+                                        p.tanggal_sewa,
+                                        p.tanggal_selesai,
+                                        p.durasi,
+                                        p.total,
+                                        p.metode_pembayaran,
+                                        p.tanggal_pesan,
+                                        p.kebutuhan_tambahan,
+                                        CASE 
+                                            WHEN py.tipe_penyewa = 'instansi' THEN py.nama_instansi
+                                            ELSE py.nama_lengkap
+                                        END as nama_penyewa,
+                                        py.email as email_penyewa,
+                                        py.tipe_penyewa,
+                                        a.nama_acara,
+                                        a.harga as harga_acara,
+                                        pb.status_pembayaran,
+                                        pb.bukti_pembayaran,
+                                        pb.tanggal_upload
+                                      FROM pemesanan p
+                                      LEFT JOIN penyewa py ON p.id_penyewa = py.id_penyewa
+                                      LEFT JOIN acara a ON p.id_acara = a.id_acara
+                                      LEFT JOIN pembayaran pb ON p.id_pemesanan = pb.id_pemesanan
+                                      ORDER BY p.tanggal_pesan DESC";
+                            
+                            $result = mysqli_query($conn, $query);
+                            
+                            if ($result && mysqli_num_rows($result) > 0) {
+                                $no = 1;
+                                while ($row = mysqli_fetch_assoc($result)) {
+                                    $status_pembayaran = $row['status_pembayaran'] ?: 'Belum Lunas';
+                                    $status_class = ($status_pembayaran == 'Lunas') ? 'badge-success' : 'badge-warning';
+                                    $tipe_class = ($row['tipe_penyewa'] == 'instansi') ? 'badge-info' : 'badge-primary';
+                                    
+                                    echo "<tr>";
+                                    echo "<td>{$no}</td>";
+                                    echo "<td><strong>{$row['id_penyewa']}</strong></td>";
+                                    echo "<td><strong>#{$row['id_pemesanan']}</strong></td>";
+                                    echo "<td><span class='badge {$tipe_class}'>" . ucfirst($row['tipe_penyewa']) . "</span></td>";
+                                    echo "<td>";
+                                    echo "<strong>{$row['nama_penyewa']}</strong>";
+                                    echo "<br><small>{$row['email_penyewa']}</small>";
+                                    echo "</td>";
+                                    echo "<td><strong>{$row['nama_acara']}</strong></td>";
+                                    echo "<td>" . date('d M Y', strtotime($row['tanggal_sewa'])) . "</td>";
+                                    echo "<td>" . date('d M Y', strtotime($row['tanggal_selesai'])) . "</td>";
+                                    echo "<td><strong>Rp " . number_format($row['total'], 0, ',', '.') . "</strong></td>";
+                                    echo "<td>{$row['metode_pembayaran']}</td>";
+                                    echo "<td>" . ($row['kebutuhan_tambahan'] ? htmlspecialchars($row['kebutuhan_tambahan']) : '-') . "</td>";
+                                    echo "<td><span class='badge {$status_class}'>{$status_pembayaran}</span></td>";
+                                    echo "<td>" . date('d M Y H:i', strtotime($row['tanggal_pesan'])) . "</td>";
+                                    echo "</tr>";
+                                    $no++;
+                                }
+                            } else {
+                                echo "<tr>";
+                                echo "<td colspan='13' style='text-align: center; padding: 40px;'>";
+                                echo "<div style='color: var(--gray);'>";
+                                echo "<i class='fas fa-calendar-times' style='font-size: 48px; margin-bottom: 16px;'></i>";
+                                echo "<div>Belum ada data riwayat pemesanan</div>";
+                                echo "</div>";
+                                echo "</td>";
+                                echo "</tr>";
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function applyFilter() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const startDate = document.getElementById('startDate').value;
+            const eventDate = document.getElementById('eventDate').value;
+            const tipeFilter = document.getElementById('tipeFilter').value;
+            
+            const table = document.getElementById('riwayatTable');
+            const tbody = table.getElementsByTagName('tbody')[0];
+            const rows = tbody.getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                
+                if (cells.length === 1) continue; // Skip empty state row
+                
+                let showRow = true;
+                
+                // Search filter
+                if (searchInput) {
+                    const rowText = row.textContent.toLowerCase();
+                    showRow = rowText.includes(searchInput);
+                }
+                
+                // Date filters
+                if (showRow && startDate) {
+                    const tanggalMulai = cells[6].textContent.trim(); // Tanggal Mulai column
+                    // Convert date format from "dd MMM yyyy" to "yyyy-mm-dd" for comparison
+                    const dateMatch = tanggalMulai.includes(new Date(startDate).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}));
+                    showRow = dateMatch;
+                }
+                
+                if (showRow && eventDate) {
+                    const tanggalMulai = cells[6].textContent.trim(); // Using tanggal mulai as event date
+                    const dateMatch = tanggalMulai.includes(new Date(eventDate).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}));
+                    showRow = dateMatch;
+                }
+                
+                // Tipe penyewa filter
+                if (showRow && tipeFilter) {
+                    const tipePenyewa = cells[3].textContent.toLowerCase().trim(); // Tipe Penyewa column
+                    showRow = tipePenyewa.includes(tipeFilter.toLowerCase());
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            }
+        }
+
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        // Add search input event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('searchInput').addEventListener('input', function() {
+                setTimeout(applyFilter, 300); // Debounce search
+            });
+        });
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Pemesanan - Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>

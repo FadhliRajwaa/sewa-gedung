@@ -26,6 +26,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $status = $_POST['status'] ?? '';
         $catatan_admin = $_POST['catatan_admin'] ?? '';
+        $status_pembayaran_manual = $_POST['status_pembayaran'] ?? '';
+        $kebutuhan_tambahan = $_POST['kebutuhan_tambahan'] ?? '';
+        
+        // Handle file upload for bukti pembayaran
+        $bukti_pembayaran_path = '';
+        if (isset($_FILES['bukti_pembayaran']) && $_FILES['bukti_pembayaran']['error'] === UPLOAD_ERR_OK) {
+            $upload_dir = '../uploads/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+            
+            $file_tmp = $_FILES['bukti_pembayaran']['tmp_name'];
+            $file_name = $_FILES['bukti_pembayaran']['name'];
+            $file_size = $_FILES['bukti_pembayaran']['size'];
+            $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+            
+            // Validate file
+            $allowed_types = ['jpg', 'jpeg', 'png', 'pdf'];
+            $max_size = 5 * 1024 * 1024; // 5MB
+            
+            if (!in_array($file_ext, $allowed_types)) {
+                throw new Exception("Format file tidak didukung. Gunakan JPG, PNG, atau PDF.");
+            }
+            
+            if ($file_size > $max_size) {
+                throw new Exception("Ukuran file terlalu besar. Maksimal 5MB.");
+            }
+            
+            // Generate unique filename
+            $new_filename = 'bukti_' . $id . '_' . time() . '.' . $file_ext;
+            $upload_path = $upload_dir . $new_filename;
+            
+            if (move_uploaded_file($file_tmp, $upload_path)) {
+                $bukti_pembayaran_path = $new_filename;
+            } else {
+                throw new Exception("Gagal mengupload file bukti pembayaran.");
+            }
+        }
         
         // Update booking - need to check what columns exist for updates
         $update_success = false;
@@ -77,15 +115,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
+        // Determine final payment status - manual override takes precedence
+        $payment_status = 'belum lunas'; // default
+        if (!empty($status_pembayaran_manual)) {
+            $payment_status = $status_pembayaran_manual;
+        } elseif ($bukti_pembayaran_path && $status === 'dikonfirmasi') {
+            $payment_status = 'lunas';
+        }
+        
         // Always update pemesanan table first
         $update_query = "UPDATE pemesanan SET 
                         status = ?, 
                         catatan_admin = ?,
+                        kebutuhan_tambahan = ?,
                         updated_at = NOW()
                         WHERE id_pemesanan = ?";
         
         $stmt = mysqli_prepare($conn, $update_query);
-        mysqli_stmt_bind_param($stmt, "ssi", $status, $catatan_admin, $id);
+        mysqli_stmt_bind_param($stmt, "sssi", $status, $catatan_admin, $kebutuhan_tambahan, $id);
         
         if (mysqli_stmt_execute($stmt)) {
             $update_success = true;
@@ -98,22 +145,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 if (mysqli_num_rows($check_payment) > 0) {
                     // Update existing payment record
-                    $payment_update = "UPDATE pembayaran SET status_pembayaran = ? WHERE id_pemesanan = ?";
-                    $payment_stmt = mysqli_prepare($conn, $payment_update);
-                    mysqli_stmt_bind_param($payment_stmt, "si", $payment_status, $id);
+                    if ($bukti_pembayaran_path) {
+                        $payment_update = "UPDATE pembayaran SET status_pembayaran = ?, bukti_pembayaran = ?, tanggal_upload = NOW() WHERE id_pemesanan = ?";
+                        $payment_stmt = mysqli_prepare($conn, $payment_update);
+                        mysqli_stmt_bind_param($payment_stmt, "ssi", $payment_status, $bukti_pembayaran_path, $id);
+                    } else {
+                        $payment_update = "UPDATE pembayaran SET status_pembayaran = ? WHERE id_pemesanan = ?";
+                        $payment_stmt = mysqli_prepare($conn, $payment_update);
+                        mysqli_stmt_bind_param($payment_stmt, "si", $payment_status, $id);
+                    }
                     mysqli_stmt_execute($payment_stmt);
                 } else {
                     // Create new payment record if doesn't exist
-                    $payment_insert = "INSERT INTO pembayaran (id_pemesanan, status_pembayaran) VALUES (?, ?)";
-                    $payment_stmt = mysqli_prepare($conn, $payment_insert);
-                    mysqli_stmt_bind_param($payment_stmt, "is", $id, $payment_status);
+                    if ($bukti_pembayaran_path) {
+                        $payment_insert = "INSERT INTO pembayaran (id_pemesanan, status_pembayaran, bukti_pembayaran, tanggal_upload) VALUES (?, ?, ?, NOW())";
+                        $payment_stmt = mysqli_prepare($conn, $payment_insert);
+                        mysqli_stmt_bind_param($payment_stmt, "iss", $id, $payment_status, $bukti_pembayaran_path);
+                    } else {
+                        $payment_insert = "INSERT INTO pembayaran (id_pemesanan, status_pembayaran) VALUES (?, ?)";
+                        $payment_stmt = mysqli_prepare($conn, $payment_insert);
+                        mysqli_stmt_bind_param($payment_stmt, "is", $id, $payment_status);
+                    }
                     mysqli_stmt_execute($payment_stmt);
                 }
             }
         }
         
         if ($update_success) {
-            $success = "Status pemesanan berhasil diupdate menjadi: " . ucfirst($status) . " (Pembayaran: $payment_status)";
+            $success_msg = "Status pemesanan berhasil diupdate menjadi: " . ucfirst($status) . " (Pembayaran: $payment_status)";
+            if ($bukti_pembayaran_path) {
+                $success_msg .= " dan bukti pembayaran berhasil diupload.";
+            }
+            $success = $success_msg;
             // Reload the page to show updated data
             echo "<script>
                 setTimeout(function() {
@@ -156,8 +219,6 @@ try {
     $select_fields[] = "COALESCE(p.kebutuhan_tambahan, 'None') as fasilitas_tambahan";
     $select_fields[] = "p.total as total_biaya";
     $select_fields[] = "DATE(p.tanggal_sewa) as tanggal_acara";
-    $select_fields[] = "'09:00' as jam_mulai";
-    $select_fields[] = "'17:00' as jam_selesai";
     $select_fields[] = "0 as jumlah_tamu";
     
     // Check if status column exists before using it
@@ -204,6 +265,8 @@ try {
             $pembayaran_check = mysqli_query($conn, "SHOW TABLES LIKE 'pembayaran'");
             if (mysqli_num_rows($pembayaran_check) > 0) {
                 $select_fields[] = "COALESCE(pb.status_pembayaran, 'Belum Lunas') as status_pembayaran";
+                $select_fields[] = "COALESCE(pb.bukti_pembayaran, '') as bukti_pembayaran";
+                $select_fields[] = "pb.tanggal_upload";
                 
                 $query = "SELECT " . implode(', ', $select_fields) . " 
                           FROM pemesanan p 
@@ -213,6 +276,8 @@ try {
                           WHERE p.id_pemesanan = ?";
             } else {
                 $select_fields[] = "'Belum Lunas' as status_pembayaran";
+                $select_fields[] = "'' as bukti_pembayaran";
+                $select_fields[] = "NULL as tanggal_upload";
                 $query = "SELECT " . implode(', ', $select_fields) . " 
                           FROM pemesanan p 
                           LEFT JOIN penyewa py ON p.id_penyewa = py.id_penyewa 
@@ -222,6 +287,8 @@ try {
         } else {
             $select_fields[] = "'Event' as jenis_acara";
             $select_fields[] = "'Belum Lunas' as status_pembayaran";
+            $select_fields[] = "'' as bukti_pembayaran";
+            $select_fields[] = "NULL as tanggal_upload";
             $query = "SELECT " . implode(', ', $select_fields) . " 
                       FROM pemesanan p 
                       LEFT JOIN penyewa py ON p.id_penyewa = py.id_penyewa 
@@ -231,6 +298,8 @@ try {
         $select_fields[] = "'Customer' as nama_penyewa";
         $select_fields[] = "'Event' as jenis_acara";
         $select_fields[] = "'Belum Lunas' as status_pembayaran";
+        $select_fields[] = "'' as bukti_pembayaran";
+        $select_fields[] = "NULL as tanggal_upload";
     }
     
     $stmt = mysqli_prepare($conn, $query);
@@ -354,6 +423,10 @@ try {
             font-size: 16px;
             font-weight: 600;
             color: var(--dark);
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
         }
 
         .form-section {
@@ -505,6 +578,57 @@ try {
             color: var(--accent);
         }
 
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            background: var(--gray-light);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .file-upload-label:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .file-upload-label.dragover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .file-upload-icon {
+            font-size: 24px;
+            color: var(--gray);
+            margin-bottom: 8px;
+        }
+
+        .file-upload-text {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -604,11 +728,6 @@ try {
                         </div>
                         
                         <div class="info-item">
-                            <div class="info-label">Waktu</div>
-                            <div class="info-value"><?= $booking['jam_mulai'] ?> - <?= $booking['jam_selesai'] ?></div>
-                        </div>
-                        
-                        <div class="info-item">
                             <div class="info-label">Total Biaya</div>
                             <div class="info-value">Rp <?= number_format($booking['total'], 0, ',', '.') ?></div>
                         </div>
@@ -663,11 +782,41 @@ try {
                             <div class="info-label">Tanggal Dibuat</div>
                             <div class="info-value"><?= date('d/m/Y H:i', strtotime($booking['created_at'])) ?></div>
                         </div>
+                        
+                        <?php if (!empty($booking['bukti_pembayaran'])): ?>
+                        <div class="info-item">
+                            <div class="info-label">Bukti Pembayaran</div>
+                            <div class="info-value">
+                                <?php
+                                $file_ext = strtolower(pathinfo($booking['bukti_pembayaran'], PATHINFO_EXTENSION));
+                                $file_path = '../uploads/' . $booking['bukti_pembayaran'];
+                                ?>
+                                <div style="margin-top: 8px;">
+                                    <?php if (in_array($file_ext, ['jpg', 'jpeg', 'png'])): ?>
+                                        <img src="<?= $file_path ?>" alt="Bukti Pembayaran" 
+                                             style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 1px solid var(--border);">
+                                    <?php else: ?>
+                                        <i class="fas fa-file-pdf" style="font-size: 24px; color: var(--danger);"></i>
+                                        <span style="margin-left: 8px;"><?= htmlspecialchars($booking['bukti_pembayaran']) ?></span>
+                                    <?php endif; ?>
+                                    <br>
+                                    <a href="<?= $file_path ?>" target="_blank" class="btn btn-sm" style="margin-top: 8px; padding: 6px 12px; background: var(--accent); color: white; text-decoration: none; border-radius: 6px; font-size: 12px;">
+                                        <i class="fas fa-external-link-alt"></i> Lihat File
+                                    </a>
+                                    <?php if (!empty($booking['tanggal_upload'])): ?>
+                                        <br><small style="color: var(--gray); margin-top: 4px; display: block;">
+                                            Diupload: <?= date('d/m/Y H:i', strtotime($booking['tanggal_upload'])) ?>
+                                        </small>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
                 <!-- Edit Form -->
-                <form method="POST" action="">
+                <form method="POST" action="" enctype="multipart/form-data">
                     <div class="form-section">
                         <h3><i class="fas fa-cogs"></i> Update Status & Catatan</h3>
                         
@@ -693,6 +842,69 @@ try {
                             <textarea name="catatan_admin" id="catatan_admin" class="form-control" 
                                       placeholder="Tambahkan catatan atau keterangan untuk pemesanan ini..."><?= htmlspecialchars($booking['catatan_admin'] === 'None' || $booking['catatan_admin'] === '' ? '' : $booking['catatan_admin']) ?></textarea>
                         </div>
+                        
+                        <!-- Edit Kebutuhan Tambahan -->
+                        <div class="form-group">
+                            <label for="kebutuhan_tambahan" class="form-label">
+                                <i class="fas fa-clipboard-list"></i> Kebutuhan Tambahan
+                            </label>
+                            <textarea name="kebutuhan_tambahan" id="kebutuhan_tambahan" class="form-control" rows="4" 
+                                      placeholder="Kebutuhan khusus untuk acara (dekorasi, catering, sound system, dll.)"><?= htmlspecialchars($booking['kebutuhan_tambahan'] ?? '') ?></textarea>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle"></i>
+                                Contoh: Dekorasi khusus, catering, sound system tambahan, dll.
+                            </small>
+                        </div>
+                        
+                        <!-- Status Pembayaran Manual -->
+                        <div class="form-group">
+                            <label for="status_pembayaran" class="form-label">
+                                <i class="fas fa-credit-card"></i> Status Pembayaran
+                            </label>
+                            <select name="status_pembayaran" id="status_pembayaran" class="form-control">
+                                <option value="Belum Lunas" <?= $booking['status_pembayaran'] === 'Belum Lunas' ? 'selected' : '' ?>>Belum Lunas</option>
+                                <option value="Lunas" <?= $booking['status_pembayaran'] === 'Lunas' ? 'selected' : '' ?>>Lunas</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle"></i>
+                                Ubah status pembayaran secara manual jika diperlukan
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Upload Bukti Pembayaran Section -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-receipt"></i> Upload Bukti Pembayaran</h3>
+                        
+                        <?php if (!empty($booking['bukti_pembayaran'])): ?>
+                        <div class="alert" style="background: rgba(6, 182, 212, 0.1); border-color: var(--accent); color: var(--accent); margin-bottom: 20px;">
+                            <i class="fas fa-info-circle"></i>
+                            Bukti pembayaran sudah ada. Upload file baru untuk mengganti yang lama.
+                        </div>
+                        <?php endif; ?>
+                        
+                        <div class="form-group">
+                            <label for="bukti_pembayaran" class="form-label">
+                                <i class="fas fa-upload"></i> Pilih File Bukti Pembayaran
+                            </label>
+                            <input type="file" name="bukti_pembayaran" id="bukti_pembayaran" 
+                                   class="form-control" accept=".jpg,.jpeg,.png,.pdf">
+                            <small class="form-text text-muted">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Format yang didukung: JPG, PNG, PDF | Maksimal ukuran: 5MB
+                            </small>
+                        </div>
+                        
+                        <div id="file-preview" style="margin-top: 15px; display: none;">
+                            <div style="padding: 12px; background: var(--gray-light); border-radius: var(--radius); border: 1px solid var(--border);">
+                                <i class="fas fa-file"></i>
+                                <span id="file-name"></span>
+                                <span id="file-size" style="color: var(--gray); margin-left: 10px;"></span>
+                                <button type="button" id="remove-file" style="background: none; border: none; color: var(--danger); margin-left: 10px; cursor: pointer;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="btn-actions">
@@ -715,6 +927,49 @@ try {
     </div>
 
     <script>
+        // File upload handling
+        const fileInput = document.getElementById('bukti_pembayaran');
+        const filePreview = document.getElementById('file-preview');
+        const fileName = document.getElementById('file-name');
+        const fileSize = document.getElementById('file-size');
+        const removeFileBtn = document.getElementById('remove-file');
+
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file type
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('Format file tidak didukung. Gunakan JPG, PNG, atau PDF.');
+                        this.value = '';
+                        filePreview.style.display = 'none';
+                        return;
+                    }
+
+                    // Validate file size (5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('Ukuran file terlalu besar. Maksimal 5MB.');
+                        this.value = '';
+                        filePreview.style.display = 'none';
+                        return;
+                    }
+
+                    // Show file preview
+                    fileName.textContent = file.name;
+                    fileSize.textContent = '(' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+                    filePreview.style.display = 'block';
+                } else {
+                    filePreview.style.display = 'none';
+                }
+            });
+
+            removeFileBtn.addEventListener('click', function() {
+                fileInput.value = '';
+                filePreview.style.display = 'none';
+            });
+        }
+
         // Form validation
         document.querySelector('form').addEventListener('submit', function(e) {
             const status = document.getElementById('status').value;
@@ -726,8 +981,31 @@ try {
                 return false;
             }
             
+            // Check if file is selected and valid
+            if (fileInput && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                
+                if (!allowedTypes.includes(file.type)) {
+                    e.preventDefault();
+                    alert('Format file bukti pembayaran tidak didukung!');
+                    return false;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    e.preventDefault();
+                    alert('Ukuran file bukti pembayaran terlalu besar!');
+                    return false;
+                }
+            }
+            
             // Confirm before submit
-            if (!confirm('Apakah Anda yakin ingin mengupdate pemesanan ini?')) {
+            let confirmMsg = 'Apakah Anda yakin ingin mengupdate pemesanan ini?';
+            if (fileInput && fileInput.files.length > 0) {
+                confirmMsg += '\n\nFile bukti pembayaran akan diupload.';
+            }
+            
+            if (!confirm(confirmMsg)) {
                 e.preventDefault();
                 return false;
             }

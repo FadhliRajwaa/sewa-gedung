@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->fetchColumn() > 0) {
             $error = 'Email atau username sudah digunakan.';
         } else {
-            $stmt = $pdo->prepare("INSERT INTO penyewa (tipe_penyewa, nama_instansi, nama_lengkap, nik, no_telepon, email, alamat, username, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO penyewa (tipe_penyewa, nama_instansi, nama_lengkap, nik, no_telepon, email, alamat, username, password, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
             $success = $stmt->execute([
                 $tipe_penyewa,
                 $nama_instansi,

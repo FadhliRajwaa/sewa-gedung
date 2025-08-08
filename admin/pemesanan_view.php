@@ -47,24 +47,6 @@ if (!$booking) {
     exit;
 }
 
-// Handle status updates
-if ($_POST && isset($_POST['update_status'])) {
-    $new_status = mysqli_real_escape_string($conn, $_POST['status']);
-    $admin_notes = mysqli_real_escape_string($conn, $_POST['admin_notes']);
-    
-    // Update payment status
-    $update_query = "UPDATE pembayaran SET status_pembayaran = '$new_status' WHERE id_pemesanan = $booking_id";
-    
-    if (mysqli_query($conn, $update_query)) {
-        $success_message = "Status pembayaran berhasil diperbarui!";
-        // Refresh data
-        $result = mysqli_query($conn, $query);
-        $booking = mysqli_fetch_assoc($result);
-    } else {
-        $error_message = "Gagal memperbarui status pembayaran!";
-    }
-}
-
 // Get customer name
 $customer_name = ($booking['tipe_penyewa'] == 'instansi') ? $booking['nama_instansi'] : $booking['nama_lengkap'];
 $status_pembayaran = $booking['status_pembayaran'] ?: 'Belum Lunas';
@@ -117,7 +99,22 @@ $status_pembayaran = $booking['status_pembayaran'] ?: 'Belum Lunas';
             box-shadow: var(--shadow);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .navbar.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+            padding: 0.75rem 2rem;
+        }
+
+        .navbar.scrolled .navbar-brand {
+            font-size: 1.3rem;
+            transition: font-size 0.3s ease;
         }
 
         .navbar-brand {
@@ -131,6 +128,68 @@ $status_pembayaran = $booking['status_pembayaran'] ?: 'Belum Lunas';
             display: flex;
             gap: 1rem;
             align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Hamburger Menu Styles */
+        .navbar-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1001;
+            transition: transform 0.3s ease;
+        }
+
+        .navbar-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .hamburger-line {
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 2px;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform-origin: center;
+        }
+
+        /* Hamburger Animation */
+        .navbar-toggle.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .navbar-toggle.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .navbar-toggle.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+
+        /* Mobile Menu Backdrop */
+        .navbar-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .navbar-backdrop.active {
+            display: block;
+            opacity: 1;
         }
 
         .nav-link {
@@ -216,7 +275,7 @@ $status_pembayaran = $booking['status_pembayaran'] ?: 'Belum Lunas';
 
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-bottom: 1.5rem;
         }
@@ -239,6 +298,10 @@ $status_pembayaran = $booking['status_pembayaran'] ?: 'Belum Lunas';
             font-size: 1rem;
             font-weight: 600;
             color: var(--dark);
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
         }
 
         .btn {
@@ -351,8 +414,88 @@ $status_pembayaran = $booking['status_pembayaran'] ?: 'Belum Lunas';
         @media (max-width: 768px) {
             .navbar {
                 padding: 1rem;
+                flex-direction: row;
+                justify-content: space-between;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+            
+            .navbar.scrolled {
+                padding: 0.75rem 1rem;
+                background: rgba(255, 255, 255, 0.98);
+            }
+            
+            .navbar.scrolled .navbar-brand {
+                font-size: 1.2rem;
+            }
+            
+            .navbar-toggle {
+                display: flex;
+            }
+            
+            .navbar-nav {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--white);
                 flex-direction: column;
-                gap: 1rem;
+                width: 100%;
+                gap: 0;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+                border-top: 1px solid var(--border);
+                padding: 0.5rem 0;
+                opacity: 0;
+                transform: translateY(-20px);
+                transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                z-index: 1000;
+                border-radius: 0 0 12px 12px;
+            }
+            
+            .navbar-nav.active {
+                display: flex;
+                opacity: 1;
+                transform: translateY(0);
+            }
+            
+            .nav-link {
+                text-align: center;
+                padding: 1.2rem 1.5rem;
+                border-bottom: 1px solid var(--gray-light);
+                margin: 0;
+                transition: all 0.3s ease;
+                font-weight: 500;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .nav-link:last-child {
+                border-bottom: none;
+                border-radius: 0 0 12px 12px;
+            }
+            
+            .nav-link:hover {
+                background: var(--primary);
+                color: var(--white);
+                transform: translateX(8px);
+            }
+            
+            .nav-link::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 4px;
+                height: 100%;
+                background: var(--primary);
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .nav-link:hover::before {
+                transform: translateX(0);
             }
             
             .container {
@@ -364,7 +507,8 @@ $status_pembayaran = $booking['status_pembayaran'] ?: 'Belum Lunas';
                 padding: 1.5rem;
                 flex-direction: column;
                 align-items: flex-start;
-                text-align: center;
+                text-align: left;
+                gap: 1rem;
             }
             
             .page-title {
@@ -382,21 +526,83 @@ $status_pembayaran = $booking['status_pembayaran'] ?: 'Belum Lunas';
             
             .info-grid {
                 grid-template-columns: 1fr;
+                gap: 1rem;
             }
             
             .action-buttons {
                 flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+                padding: 1rem;
+                font-size: 1rem;
+            }
+            
+            .payment-proof {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 0.25rem;
+            }
+            
+            .page-header {
+                padding: 1rem;
+            }
+            
+            .card {
+                margin-bottom: 1rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .info-item {
+                padding: 0.5rem 0;
+                border-bottom: 1px solid var(--gray-light);
+            }
+            
+            .info-item:last-child {
+                border-bottom: none;
+            }
+            
+            .info-label {
+                font-size: 0.8rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .info-value {
+                font-size: 0.95rem;
+                word-wrap: break-word;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Mobile Menu Backdrop -->
+    <div class="navbar-backdrop" id="navbarBackdrop"></div>
+    
     <!-- Navbar -->
     <nav class="navbar">
         <a href="dashboard.php" class="navbar-brand">
             <i class="fas fa-cog"></i> Admin Panel
         </a>
-        <div class="navbar-nav">
+        
+        <!-- Hamburger Menu Button -->
+        <button class="navbar-toggle" id="navbarToggle">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+        
+        <div class="navbar-nav" id="navbarNav">
             <a href="dashboard.php" class="nav-link">
                 <i class="fas fa-tachometer-alt"></i> Dashboard
             </a>
@@ -450,20 +656,20 @@ $status_pembayaran = $booking['status_pembayaran'] ?: 'Belum Lunas';
                     <div class="card-body">
                         <div class="info-grid">
                             <div class="info-item">
-                                <div class="info-label">Nama <?php echo ucfirst($booking['tipe_penyewa']); ?></div>
+                                <div class="info-label">Nama <?php echo ($booking['tipe_penyewa'] == 'instansi') ? 'Instansi' : 'Penyewa'; ?></div>
                                 <div class="info-value"><?php echo htmlspecialchars($customer_name); ?></div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label">Tipe Penyewa</div>
                                 <div class="info-value">
                                     <span class="status-badge <?php echo $booking['tipe_penyewa'] == 'instansi' ? 'status-pending' : 'status-lunas'; ?>">
-                                        <?php echo ucfirst($booking['tipe_penyewa']); ?>
+                                        <?php echo ($booking['tipe_penyewa'] == 'instansi') ? 'Instansi' : 'Umum'; ?>
                                     </span>
                                 </div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label">Email</div>
-                                <div class="info-value"><?php echo htmlspecialchars($booking['email']); ?></div>
+                                <div class="info-value" style="word-wrap: break-word; word-break: break-all; max-width: 250px;"><?php echo htmlspecialchars($booking['email']); ?></div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label">No. Telepon</div>
@@ -539,31 +745,6 @@ $status_pembayaran = $booking['status_pembayaran'] ?: 'Belum Lunas';
 
             <!-- Sidebar -->
             <div>
-                <!-- Payment Status -->
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-credit-card"></i> Status Pembayaran
-                    </div>
-                    <div class="card-body">
-                        <form method="POST">
-                            <div class="form-group">
-                                <label class="form-label">Status</label>
-                                <select name="status" class="form-control" required>
-                                    <option value="Belum Lunas" <?php echo ($status_pembayaran == 'Belum Lunas') ? 'selected' : ''; ?>>Belum Lunas</option>
-                                    <option value="Lunas" <?php echo ($status_pembayaran == 'Lunas') ? 'selected' : ''; ?>>Lunas</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Catatan Admin</label>
-                                <textarea name="admin_notes" class="form-control" rows="3" placeholder="Catatan tambahan..."></textarea>
-                            </div>
-                            <button type="submit" name="update_status" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Update Status
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
                 <!-- Payment Proof -->
                 <div class="card">
                     <div class="card-header">
@@ -598,10 +779,88 @@ $status_pembayaran = $booking['status_pembayaran'] ?: 'Belum Lunas';
             <a href="mailto:<?php echo $booking['email']; ?>" class="btn btn-success">
                 <i class="fas fa-envelope"></i> Kirim Email
             </a>
+            <a href="pemesanan_edit.php?id=<?php echo $booking_id; ?>" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit Pemesanan
+            </a>
         </div>
     </div>
 
     <script>
+        // Hamburger Menu Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbarToggle = document.getElementById('navbarToggle');
+            const navbarNav = document.getElementById('navbarNav');
+            const navbarBackdrop = document.getElementById('navbarBackdrop');
+            const navbar = document.querySelector('.navbar');
+            
+            // Sticky navbar scroll effect
+            let lastScrollY = window.scrollY;
+            
+            function updateNavbar() {
+                const currentScrollY = window.scrollY;
+                
+                if (currentScrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+                
+                lastScrollY = currentScrollY;
+            }
+            
+            // Listen for scroll events
+            window.addEventListener('scroll', updateNavbar, { passive: true });
+            
+            // Initial check
+            updateNavbar();
+            
+            function toggleMenu() {
+                // Toggle active class on hamburger button
+                navbarToggle.classList.toggle('active');
+                
+                // Toggle active class on navbar nav
+                navbarNav.classList.toggle('active');
+                
+                // Toggle backdrop
+                navbarBackdrop.classList.toggle('active');
+                
+                // Prevent body scroll when menu is open
+                document.body.style.overflow = navbarNav.classList.contains('active') ? 'hidden' : '';
+            }
+            
+            function closeMenu() {
+                navbarToggle.classList.remove('active');
+                navbarNav.classList.remove('active');
+                navbarBackdrop.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            navbarToggle.addEventListener('click', toggleMenu);
+            
+            // Close menu when clicking on backdrop
+            navbarBackdrop.addEventListener('click', closeMenu);
+            
+            // Close menu when clicking on nav links
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(function(link) {
+                link.addEventListener('click', closeMenu);
+            });
+            
+            // Close menu on escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeMenu();
+                }
+            });
+            
+            // Close menu when window is resized to desktop
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    closeMenu();
+                }
+            });
+        });
+        
         // Auto refresh status every 30 seconds
         setInterval(function() {
             location.reload();

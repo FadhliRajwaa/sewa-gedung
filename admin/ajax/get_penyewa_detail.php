@@ -18,7 +18,10 @@ try {
                      email, 
                      no_telepon as telepon, 
                      alamat, 
-                     tipe_penyewa as jenis_penyewa
+                     CASE 
+                         WHEN tipe_penyewa = 'instansi' THEN 'instansi'
+                         ELSE 'umum'
+                     END as jenis_penyewa
               FROM penyewa WHERE id_penyewa = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$id]);

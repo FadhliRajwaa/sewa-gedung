@@ -8,15 +8,38 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 require_once '../../config.php';
 
+// Get period parameter
+$period = $_GET['period'] ?? '6months';
+
 try {
-    // Get chart data for last 6 months
+    // Determine date range based on period
+    $dateCondition = '';
+    $monthsBack = 6;
+    
+    switch ($period) {
+        case '1year':
+            $monthsBack = 12;
+            $dateCondition = "WHERE p.tanggal_sewa >= DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH)";
+            break;
+        case 'all':
+            $monthsBack = 24; // Show last 24 months for 'all'
+            $dateCondition = "WHERE p.tanggal_sewa IS NOT NULL";
+            break;
+        case '6months':
+        default:
+            $monthsBack = 6;
+            $dateCondition = "WHERE p.tanggal_sewa >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)";
+            break;
+    }
+
+    // Get chart data based on tanggal_sewa
     $stmt = $pdo->query("
         SELECT 
-            DATE_FORMAT(p.tanggal_pesan, '%Y-%m') as period,
+            DATE_FORMAT(p.tanggal_sewa, '%Y-%m') as period,
             COUNT(*) as count
         FROM pemesanan p
-        WHERE p.tanggal_pesan >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)
-        GROUP BY DATE_FORMAT(p.tanggal_pesan, '%Y-%m')
+        $dateCondition
+        GROUP BY DATE_FORMAT(p.tanggal_sewa, '%Y-%m')
         ORDER BY period
     ");
     
@@ -25,8 +48,8 @@ try {
     $labels = [];
     $values = [];
     
-    // Generate last 6 months labels
-    for ($i = 5; $i >= 0; $i--) {
+    // Generate labels based on period
+    for ($i = $monthsBack - 1; $i >= 0; $i--) {
         $date = date('Y-m', strtotime("-$i months"));
         $labels[] = date('M Y', strtotime("-$i months"));
         

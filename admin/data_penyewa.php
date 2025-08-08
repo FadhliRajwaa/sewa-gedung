@@ -486,6 +486,44 @@ if (!isset($_SESSION['admin_logged_in'])) {
             justify-content: center;
         }
 
+        /* Action Buttons */
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            margin: 0 2px;
+            min-width: 36px;
+            height: 36px;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-detail {
+            background: linear-gradient(135deg, var(--accent) 0%, #0891b2 100%);
+            color: var(--white);
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, var(--warning) 0%, #ea580c 100%);
+            color: var(--white);
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            color: var(--white);
+        }
+
         /* Responsive */
         @media (max-width: 1024px) {
             .main-content {
@@ -669,7 +707,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
                         <i class="fas fa-user"></i>
                     </div>
                     <div class="stat-number" id="individuCount">0</div>
-                    <div class="stat-label">Individu</div>
+                    <div class="stat-label">Umum</div>
                 </div>
 
                 <div class="stat-card">
@@ -725,12 +763,15 @@ if (!isset($_SESSION['admin_logged_in'])) {
                                     $email_class = $row['email_terverifikasi'] ? 'badge-success' : 'badge-warning';
                                     $tipe_class = ($row['tipe_penyewa'] == 'instansi') ? 'badge-info' : 'badge-primary';
                                     
+                                    // Map tipe penyewa dengan nilai yang jelas
+                                    $tipe_display = ($row['tipe_penyewa'] == 'instansi') ? 'Instansi' : 'Umum';
+                                    
                                     echo "<tr>";
                                     echo "<td><strong>#{$row['id_penyewa']}</strong></td>";
                                     echo "<td>{$nama}</td>";
                                     echo "<td>{$row['email']}</td>";
                                     echo "<td>{$row['no_telepon']}</td>";
-                                    echo "<td><span class='badge {$tipe_class}'>" . ucfirst($row['tipe_penyewa']) . "</span></td>";
+                                    echo "<td><span class='badge {$tipe_class}'>{$tipe_display}</span></td>";
                                     echo "<td><span class='badge {$email_class}'>{$email_status}</span></td>";
                                     echo "<td>";
                                     echo "<button class='btn-action btn-detail' onclick='viewDetail({$row['id_penyewa']})' title='Detail'>";
@@ -768,10 +809,13 @@ if (!isset($_SESSION['admin_logged_in'])) {
                             $email_class = $row['email_terverifikasi'] ? 'badge-success' : 'badge-warning';
                             $tipe_class = ($row['tipe_penyewa'] == 'instansi') ? 'badge-info' : 'badge-primary';
                             
+                            // Map tipe penyewa dengan nilai yang jelas
+                            $tipe_display = ($row['tipe_penyewa'] == 'instansi') ? 'Instansi' : 'Umum';
+                            
                             echo "<div class='mobile-card'>";
                             echo "<div class='mobile-card-header'>";
                             echo "<h4>#{$row['id_penyewa']} - {$nama}</h4>";
-                            echo "<span class='badge {$tipe_class}'>" . ucfirst($row['tipe_penyewa']) . "</span>";
+                            echo "<span class='badge {$tipe_class}'>{$tipe_display}</span>";
                             echo "</div>";
                             echo "<div class='mobile-card-content'>";
                             echo "<p><strong>Email:</strong> {$row['email']}</p>";
@@ -870,8 +914,8 @@ if (!isset($_SESSION['admin_logged_in'])) {
                         <td>${penyewa.email}</td>
                         <td>${penyewa.telepon}</td>
                         <td>
-                            <span class="badge ${penyewa.jenis === 'instansi' ? 'badge-info' : 'badge-secondary'}">
-                                ${penyewa.jenis}
+                            <span class="badge ${penyewa.jenis === 'instansi' ? 'badge-info' : 'badge-primary'}">
+                                ${penyewa.jenis === 'instansi' ? 'Instansi' : 'Umum'}
                             </span>
                         </td>
                         <td>
@@ -915,8 +959,8 @@ if (!isset($_SESSION['admin_logged_in'])) {
                             </div>
                             <div class="mobile-field">
                                 <span class="mobile-field-label">Tipe:</span>
-                                <span class="badge ${penyewa.jenis === 'instansi' ? 'badge-info' : 'badge-secondary'}">
-                                    ${penyewa.jenis}
+                                <span class="badge ${penyewa.jenis === 'instansi' ? 'badge-info' : 'badge-primary'}">
+                                    ${penyewa.jenis === 'instansi' ? 'Instansi' : 'Umum'}
                                 </span>
                             </div>
                             <div class="mobile-field">

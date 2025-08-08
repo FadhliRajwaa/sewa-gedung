@@ -14,31 +14,33 @@ try {
     $stmt->execute();
     $total = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     
-    // Get count by payment status
-    $statusQuery = "SELECT pb.status_pembayaran, COUNT(*) as count 
-                   FROM pemesanan p 
-                   LEFT JOIN pembayaran pb ON p.id_pemesanan = pb.id_pemesanan 
-                   GROUP BY pb.status_pembayaran";
-    $stmt = $pdo->prepare($statusQuery);
+    // Get confirmed count (status = 'confirmed' OR 'completed')
+    $confirmedQuery = "SELECT COUNT(*) as count FROM pemesanan WHERE status IN ('confirmed', 'completed')";
+    $stmt = $pdo->prepare($confirmedQuery);
     $stmt->execute();
-    $statusCounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $confirmed = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    
+    // Get pending count (status = 'pending')
+    $pendingQuery = "SELECT COUNT(*) as count FROM pemesanan WHERE status = 'pending' OR status IS NULL";
+    $stmt = $pdo->prepare($pendingQuery);
+    $stmt->execute();
+    $pending = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    
+    // Get total revenue from confirmed bookings
+    $revenueQuery = "SELECT COALESCE(SUM(p.total), 0) as revenue 
+                    FROM pemesanan p 
+                    LEFT JOIN pembayaran pb ON p.id_pemesanan = pb.id_pemesanan 
+                    WHERE pb.status_pembayaran = 'Lunas' OR p.status IN ('confirmed', 'completed')";
+    $stmt = $pdo->prepare($revenueQuery);
+    $stmt->execute();
+    $revenue = $stmt->fetch(PDO::FETCH_ASSOC)['revenue'];
     
     $result = [
         'total' => $total,
-        'lunas' => 0,
-        'belum_lunas' => 0,
-        'no_payment' => 0
+        'confirmed' => $confirmed,
+        'pending' => $pending,
+        'revenue' => number_format($revenue, 0, ',', '.')
     ];
-    
-    foreach ($statusCounts as $status) {
-        if ($status['status_pembayaran'] === 'Lunas') {
-            $result['lunas'] = $status['count'];
-        } elseif ($status['status_pembayaran'] === 'Belum Lunas') {
-            $result['belum_lunas'] = $status['count'];
-        } elseif ($status['status_pembayaran'] === null) {
-            $result['no_payment'] = $status['count'];
-        }
-    }
     
     echo json_encode($result);
 } catch (PDOException $e) {

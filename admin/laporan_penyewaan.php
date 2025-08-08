@@ -153,8 +153,6 @@ if (!isset($_SESSION['admin_logged_in'])) {
             color: var(--dark);
             font-size: 18px;
             cursor: pointer;
-            align-items: center;
-            justify-content: center;
         }
 
         .mobile-overlay {
@@ -181,76 +179,196 @@ if (!isset($_SESSION['admin_logged_in'])) {
             margin-bottom: 32px;
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .page-title {
             font-size: 28px;
             font-weight: 700;
             color: var(--dark);
-            margin-bottom: 4px;
         }
 
-        .page-subtitle {
-            color: var(--gray);
-            font-size: 16px;
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
         }
 
-        /* Stats Cards */
-        .stats-grid {
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Cards Grid */
+        .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 24px;
             margin-bottom: 32px;
         }
 
-        .stat-card {
+        .card {
             background: var(--white);
-            padding: 24px;
             border-radius: var(--radius-lg);
+            padding: 24px;
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.2s ease;
         }
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
         }
 
-        .stat-icon {
-            width: 56px;
-            height: 56px;
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
             border-radius: var(--radius);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
             color: var(--white);
-            margin-bottom: 16px;
         }
 
-        .stat-icon.primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
-        .stat-icon.success { background: linear-gradient(135deg, var(--success), #16a34a); }
-        .stat-icon.warning { background: linear-gradient(135deg, var(--warning), #ea580c); }
-        .stat-icon.accent { background: linear-gradient(135deg, var(--accent), #0891b2); }
+        .card-icon.primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
 
-        .stat-number {
+        .card-icon.success {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        }
+
+        .card-icon.warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+        }
+
+        .card-icon.info {
+            background: linear-gradient(135deg, var(--accent) 0%, #0891b2 100%);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-value {
             font-size: 32px;
             font-weight: 800;
             color: var(--dark);
             margin-bottom: 8px;
         }
 
-        .stat-label {
-            color: var(--gray);
+        .card-description {
             font-size: 14px;
-            font-weight: 500;
+            color: var(--gray);
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: var(--white);
+            padding: 24px 32px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .filter-input {
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            background: var(--white);
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 32px;
+            height: 400px; /* Fixed height */
+        }
+
+        .chart-header {
+            margin-bottom: 24px;
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .chart-description {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        #monthlyChart {
+            max-height: 300px !important;
+            max-width: 100% !important;
         }
 
         /* Table Section */
@@ -277,108 +395,40 @@ if (!isset($_SESSION['admin_logged_in'])) {
             color: var(--dark);
         }
 
-        .table-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: var(--radius);
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 14px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: var(--white);
-        }
-
-        .btn-secondary {
-            background: var(--gray-light);
-            color: var(--gray);
-            border: 1px solid var(--border);
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
         .table-responsive {
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            border-radius: var(--radius);
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .table-responsive::-webkit-scrollbar {
-            height: 8px;
-        }
-
-        .table-responsive::-webkit-scrollbar-track {
-            background: var(--gray-light);
-            border-radius: 4px;
-        }
-
-        .table-responsive::-webkit-scrollbar-thumb {
-            background: var(--gray);
-            border-radius: 4px;
-        }
-
-        .table-responsive::-webkit-scrollbar-thumb:hover {
-            background: var(--primary);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 700px;
-            background: var(--white);
+            min-width: 800px;
         }
 
         th, td {
-            padding: 16px 20px;
+            padding: 16px 12px;
             text-align: left;
             border-bottom: 1px solid var(--border);
-            vertical-align: middle;
+            font-size: 13px;
         }
 
         th {
             background: var(--gray-light);
             font-weight: 600;
             color: var(--dark);
-            font-size: 14px;
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
         }
 
         tr:hover {
             background: rgba(99, 102, 241, 0.02);
         }
 
-        tr:nth-child(even) {
-            background: rgba(248, 250, 252, 0.5);
-        }
-
-        tr:nth-child(even):hover {
-            background: rgba(99, 102, 241, 0.02);
-        }
-
         .badge {
-            padding: 6px 12px;
+            padding: 4px 8px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -399,270 +449,95 @@ if (!isset($_SESSION['admin_logged_in'])) {
             color: var(--accent);
         }
 
-        /* Loading */
-        .loading {
+        .badge-primary {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .empty-state {
             text-align: center;
-            padding: 40px;
+            padding: 60px;
             color: var(--gray);
         }
 
-        .spinner {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            border: 3px solid var(--border);
-            border-radius: 50%;
-            border-top-color: var(--primary);
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Utility Classes */
-        .text-center {
-            text-align: center;
-        }
-
-        .text-red-500 {
-            color: var(--danger);
-        }
-
-        .badge-danger {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 16px;
+            color: var(--border);
         }
 
         /* Responsive */
-        @media (max-width: 1024px) {
-            .main-content {
-                padding: 24px;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .table-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
-            }
-
-            .table-actions {
-                width: 100%;
-                justify-content: flex-start;
-            }
-        }
-
         @media (max-width: 768px) {
             .mobile-menu-toggle {
-                display: flex !important;
+                display: flex;
                 align-items: center;
                 justify-content: center;
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                z-index: 1001;
-                background: var(--white);
-                border: none;
-                width: 48px;
-                height: 48px;
-                border-radius: var(--radius);
-                box-shadow: var(--shadow-lg);
-                color: var(--dark);
-                font-size: 18px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-
-            .mobile-menu-toggle:hover {
-                background: var(--gray-light);
-                transform: scale(1.05);
             }
 
             .sidebar {
                 transform: translateX(-100%);
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
             .sidebar.active {
                 transform: translateX(0);
             }
 
-            .mobile-overlay {
-                display: none;
-                position: fixed;
-                inset: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 999;
-                backdrop-filter: blur(4px);
-                opacity: 0;
-                transition: opacity 0.3s ease;
-            }
-
             .mobile-overlay.active {
                 display: block;
-                opacity: 1;
             }
 
             .main-content {
                 margin-left: 0;
                 padding: 16px;
                 padding-top: 80px;
-                width: 100%;
             }
 
-            .stats-grid {
+            .page-header {
+                padding: 20px;
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            .cards-grid {
                 grid-template-columns: 1fr;
                 gap: 16px;
             }
 
-            .page-header {
-                padding: 20px 16px;
-                margin-bottom: 24px;
+            .filter-section {
+                padding: 20px;
             }
 
-            .page-title {
-                font-size: 24px;
-                line-height: 1.2;
-            }
-
-            .page-subtitle {
-                font-size: 14px;
-                margin-top: 8px;
-            }
-
-            .table-container {
-                border-radius: 12px;
-                overflow: hidden;
-            }
-
-            .table-header {
-                padding: 16px;
-                flex-direction: column;
-                align-items: flex-start;
+            .filter-grid {
+                grid-template-columns: 1fr;
                 gap: 12px;
             }
 
-            .table-title {
-                font-size: 18px;
-            }
-
-            .table-actions {
-                width: 100%;
-                justify-content: flex-start;
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-
-            .btn {
-                font-size: 12px;
-                padding: 10px 16px;
-                flex: 1;
-                min-width: 120px;
-                justify-content: center;
-            }
-
-            .table-responsive {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                border-radius: 0;
+            .table-header {
+                padding: 20px;
+                flex-direction: column;
+                gap: 16px;
             }
 
             table {
-                min-width: 600px;
-                font-size: 14px;
+                font-size: 12px;
             }
 
             th, td {
                 padding: 12px 8px;
-                white-space: nowrap;
             }
 
-            th {
-                font-size: 12px;
-                position: sticky;
-                top: 0;
-                background: var(--gray-light);
-                z-index: 10;
-            }
-
-            .stat-card {
-                padding: 20px;
-            }
-
-            .stat-number {
-                font-size: 28px;
-            }
-
-            .stat-label {
-                font-size: 13px;
-            }
-
-            .badge {
-                font-size: 10px;
-                padding: 4px 8px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .main-content {
-                padding: 12px;
-                padding-top: 80px;
-            }
-
-            .page-header {
-                padding: 16px 12px;
-            }
-
-            .page-title {
-                font-size: 20px;
-            }
-
-            .stats-grid {
-                gap: 12px;
-            }
-
-            .stat-card {
+            .chart-container {
+                height: 300px;
                 padding: 16px;
-                text-align: center;
             }
 
-            .stat-number {
-                font-size: 24px;
-            }
-
-            .stat-icon {
-                margin: 0 auto 12px;
-            }
-
-            .table-container {
-                margin-bottom: 16px;
-            }
-
-            .table-header {
-                padding: 12px;
-            }
-
-            .table-title {
-                font-size: 16px;
-            }
-
-            table {
-                min-width: 500px;
-                font-size: 12px;
-            }
-
-            th, td {
-                padding: 8px 6px;
-            }
-
-            .btn {
-                font-size: 11px;
-                padding: 8px 12px;
-                min-width: 100px;
+            .chart-wrapper {
+                height: 200px;
             }
         }
     </style>
@@ -670,7 +545,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
 <body>
     <div class="app-container">
         <!-- Mobile Menu Toggle -->
-        <button class="mobile-menu-toggle" id="mobileMenuToggle">
+        <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
             <i class="fas fa-bars"></i>
         </button>
 
@@ -735,351 +610,206 @@ if (!isset($_SESSION['admin_logged_in'])) {
             <!-- Page Header -->
             <div class="page-header">
                 <h1 class="page-title">Laporan Penyewaan</h1>
-                <p class="page-subtitle">Analisis dan laporan komprehensif penyewaan gedung</p>
+                <button class="btn btn-primary" onclick="exportData()">
+                    <i class="fas fa-download"></i>
+                    Export Laporan
+                </button>
             </div>
 
-            <!-- Stats Grid -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon primary">
-                        <i class="fas fa-chart-line"></i>
+            <?php
+            // Ambil statistik
+            $stats = [];
+            
+            // Total pemesanan
+            $total_pemesanan = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM pemesanan"))[0];
+            
+            // Total pendapatan
+            $total_pendapatan = mysqli_fetch_row(mysqli_query($conn, "SELECT COALESCE(SUM(total), 0) FROM pemesanan"))[0];
+            
+            // Pemesanan bulan ini
+            $bulan_ini = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM pemesanan WHERE MONTH(tanggal_pesan) = MONTH(NOW()) AND YEAR(tanggal_pesan) = YEAR(NOW())"))[0];
+            
+            // Pemesanan lunas
+            $pemesanan_lunas = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM pembayaran WHERE status_pembayaran = 'Lunas'"))[0];
+            ?>
+
+            <!-- Statistics Cards -->
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon primary">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">Total Pemesanan</div>
+                        </div>
                     </div>
-                    <div class="stat-number" id="totalPendapatan"><?php
-                        try {
-                            $tables_check = mysqli_query($conn, "SHOW TABLES LIKE 'pemesanan'");
-                            if (mysqli_num_rows($tables_check) > 0) {
-                                $columns_check = mysqli_query($conn, "SHOW COLUMNS FROM pemesanan");
-                                $columns = [];
-                                while ($col = mysqli_fetch_assoc($columns_check)) {
-                                    $columns[] = $col['Field'];
-                                }
-                                $cost_column = in_array('total_biaya', $columns) ? 'total_biaya' : 'total';
-                                $pendapatan_query = mysqli_query($conn, "SELECT SUM($cost_column) as pendapatan FROM pemesanan");
-                                $pendapatan = $pendapatan_query ? (mysqli_fetch_assoc($pendapatan_query)['pendapatan'] ?: 0) : 0;
-                                echo 'Rp ' . number_format($pendapatan, 0, ',', '.');
-                            } else {
-                                echo 'Rp 10,000,000';
-                            }
-                        } catch (Exception $e) {
-                            echo 'Rp 0';
-                        }
-                    ?></div>
-                    <div class="stat-label">Total Pendapatan</div>
+                    <div class="card-value"><?= $total_pemesanan ?></div>
+                    <div class="card-description">Semua pemesanan</div>
                 </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon success">
-                        <i class="fas fa-calendar-check"></i>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon success">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">Total Pendapatan</div>
+                        </div>
                     </div>
-                    <div class="stat-number" id="totalPemesanan"><?php
-                        try {
-                            $total_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM pemesanan");
-                            echo $total_query ? mysqli_fetch_assoc($total_query)['total'] : '25';
-                        } catch (Exception $e) {
-                            echo '25';
-                        }
-                    ?></div>
-                    <div class="stat-label">Total Pemesanan</div>
+                    <div class="card-value">Rp <?= number_format($total_pendapatan, 0, ',', '.') ?></div>
+                    <div class="card-description">Pendapatan keseluruhan</div>
                 </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon warning">
-                        <i class="fas fa-chart-simple"></i>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon warning">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">Bulan Ini</div>
+                        </div>
                     </div>
-                    <div class="stat-number" id="rataRataBulanan"><?php
-                        try {
-                            $tables_check = mysqli_query($conn, "SHOW TABLES LIKE 'pemesanan'");
-                            if (mysqli_num_rows($tables_check) > 0) {
-                                $columns_check = mysqli_query($conn, "SHOW COLUMNS FROM pemesanan");
-                                $columns = [];
-                                while ($col = mysqli_fetch_assoc($columns_check)) {
-                                    $columns[] = $col['Field'];
-                                }
-                                $cost_column = in_array('total_biaya', $columns) ? 'total_biaya' : 'total';
-                                $pendapatan_query = mysqli_query($conn, "SELECT SUM($cost_column) as pendapatan FROM pemesanan");
-                                $pendapatan = $pendapatan_query ? (mysqli_fetch_assoc($pendapatan_query)['pendapatan'] ?: 0) : 0;
-                                $rata_rata = $pendapatan > 0 ? $pendapatan / 12 : 0;
-                                echo 'Rp ' . number_format($rata_rata, 0, ',', '.');
-                            } else {
-                                echo 'Rp 850,000';
-                            }
-                        } catch (Exception $e) {
-                            echo 'Rp 0';
-                        }
-                    ?></div>
-                    <div class="stat-label">Rata-rata Bulanan</div>
+                    <div class="card-value"><?= $bulan_ini ?></div>
+                    <div class="card-description">Pemesanan bulan ini</div>
                 </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon accent">
-                        <i class="fas fa-percentage"></i>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon info">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div>
+                            <div class="card-title">Lunas</div>
+                        </div>
                     </div>
-                    <div class="stat-number" id="tingkatOkupansi"><?php
-                        try {
-                            $tables_check = mysqli_query($conn, "SHOW TABLES LIKE 'pemesanan'");
-                            if (mysqli_num_rows($tables_check) > 0) {
-                                $total_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM pemesanan");
-                                $total = $total_query ? mysqli_fetch_assoc($total_query)['total'] : 0;
-                                $okupansi = $total > 0 ? min(($total / 30) * 100, 100) : 0;
-                                echo round($okupansi) . '%';
-                            } else {
-                                echo '15%';
-                            }
-                        } catch (Exception $e) {
-                            echo '0%';
-                        }
-                    ?></div>
-                    <div class="stat-label">Tingkat Okupansi</div>
+                    <div class="card-value"><?= $pemesanan_lunas ?></div>
+                    <div class="card-description">Pembayaran lunas</div>
                 </div>
             </div>
 
-            <!-- Summary Table -->
-            <div class="table-container">
-                <div class="table-header">
-                    <h3 class="table-title">Ringkasan Laporan</h3>
-                    <div class="table-actions">
-                        <button class="btn btn-secondary" onclick="exportReport()">
-                            <i class="fas fa-download"></i>
-                            Export
-                        </button>
-                        <button class="btn btn-primary" onclick="refreshReport()">
-                            <i class="fas fa-refresh"></i>
-                            Refresh
-                        </button>
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">Tanggal Mulai</label>
+                        <input type="date" class="filter-input" id="startDate" onchange="applyFilter()">
                     </div>
-                </div>
-                
-                <div class="table-responsive">
-                    <table id="reportTable">
-                        <thead>
-                            <tr>
-                                <th>Bulan</th>
-                                <th>Jenis Acara</th>
-                                <th>Jumlah Pemesanan</th>
-                                <th>Total Pendapatan</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    <div class="filter-group">
+                        <label class="filter-label">Tanggal Akhir</label>
+                        <input type="date" class="filter-input" id="endDate" onchange="applyFilter()">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Acara</label>
+                        <select class="filter-input" id="acaraFilter" onchange="applyFilter()">
+                            <option value="">Semua Acara</option>
                             <?php
-                            // Generate monthly report
-                            try {
-                                $tables_check = mysqli_query($conn, "SHOW TABLES LIKE 'pemesanan'");
-                                
-                                if (mysqli_num_rows($tables_check) > 0) {
-                                    // Get column info
-                                    $columns_check = mysqli_query($conn, "SHOW COLUMNS FROM pemesanan");
-                                    $columns = [];
-                                    while ($col = mysqli_fetch_assoc($columns_check)) {
-                                        $columns[] = $col['Field'];
-                                    }
-                                    
-                                    $date_column = in_array('tanggal_acara', $columns) ? 'tanggal_acara' : 
-                                                  (in_array('tanggal_sewa', $columns) ? 'tanggal_sewa' : 'created_at');
-                                    $cost_column = in_array('total_biaya', $columns) ? 'total_biaya' : 
-                                                  (in_array('total', $columns) ? 'total' : '0');
-                                    $event_column = in_array('jenis_acara', $columns) ? 'jenis_acara' : 
-                                                   (in_array('acara', $columns) ? 'acara' : "'Umum'");
-                                    
-                                    $query = "SELECT 
-                                        MONTHNAME($date_column) as bulan,
-                                        $event_column as jenis_acara,
-                                        COUNT(*) as jumlah_pemesanan,
-                                        SUM($cost_column) as total_pendapatan,
-                                        'Active' as status
-                                        FROM pemesanan 
-                                        WHERE YEAR($date_column) = YEAR(CURDATE())
-                                        GROUP BY MONTH($date_column), $event_column
-                                        ORDER BY MONTH($date_column) DESC, $event_column";
-                                    
-                                    $result = mysqli_query($conn, $query);
-                                    
-                                    if ($result && mysqli_num_rows($result) > 0) {
-                                        while ($row = mysqli_fetch_assoc($result)) {
-                                            echo "<tr>";
-                                            echo "<td>" . htmlspecialchars($row['bulan']) . "</td>";
-                                            echo "<td>" . htmlspecialchars($row['jenis_acara']) . "</td>";
-                                            echo "<td>" . $row['jumlah_pemesanan'] . "</td>";
-                                            echo "<td>Rp " . number_format($row['total_pendapatan'], 0, ',', '.') . "</td>";
-                                            echo "<td><span class='badge badge-success'>Active</span></td>";
-                                            echo "</tr>";
-                                        }
-                                    } else {
-                                        echo "<tr><td colspan='5' class='text-center'>Tidak ada data laporan</td></tr>";
-                                    }
-                                } else {
-                                    // Sample data
-                                    $sample_reports = [
-                                        ['Januari', 'Pernikahan', 5, 50000000, 'Active'],
-                                        ['Januari', 'Seminar', 3, 21000000, 'Active'],
-                                        ['Februari', 'Rapat', 2, 10000000, 'Active'],
-                                        ['Februari', 'Pernikahan', 4, 40000000, 'Active']
-                                    ];
-                                    
-                                    foreach ($sample_reports as $report) {
-                                        echo "<tr>";
-                                        echo "<td>{$report[0]}</td>";
-                                        echo "<td>{$report[1]}</td>";
-                                        echo "<td>{$report[2]}</td>";
-                                        echo "<td>Rp " . number_format($report[3], 0, ',', '.') . "</td>";
-                                        echo "<td><span class='badge badge-success'>{$report[4]}</span></td>";
-                                        echo "</tr>";
-                                    }
-                                }
-                            } catch (Exception $e) {
-                                echo "<tr><td colspan='5' class='text-center text-red-500'>Error: " . htmlspecialchars($e->getMessage()) . "</td></tr>";
+                            $acara_query = mysqli_query($conn, "SELECT DISTINCT nama_acara FROM acara ORDER BY nama_acara");
+                            while($acara = mysqli_fetch_assoc($acara_query)) {
+                                echo "<option value='{$acara['nama_acara']}'>{$acara['nama_acara']}</option>";
                             }
                             ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Detailed Bookings Table -->
-            <div class="table-container" style="margin-top: 2rem;">
-                <div class="table-header">
-                    <h3 class="table-title">Data Pemesanan Detail</h3>
-                    <div class="table-actions">
-                        <button class="btn btn-primary" onclick="location.reload()">
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Status Pembayaran</label>
+                        <select class="filter-input" id="statusFilter" onchange="applyFilter()">
+                            <option value="">Semua Status</option>
+                            <option value="Lunas">Lunas</option>
+                            <option value="Belum Lunas">Belum Lunas</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Aksi</label>
+                        <button class="btn btn-primary" onclick="resetFilter()">
                             <i class="fas fa-refresh"></i>
-                            Refresh
+                            Reset
                         </button>
                     </div>
                 </div>
+            </div>
+
+            <!-- Chart Container -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Grafik Pemesanan Bulanan</h3>
+                    <p class="chart-description">Statistik pemesanan per bulan tahun ini</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Data Laporan Penyewaan</h3>
+                </div>
                 
                 <div class="table-responsive">
-                    <table>
+                    <table id="laporanTable">
                         <thead>
                             <tr>
                                 <th>No</th>
+                                <th>ID Pemesanan</th>
                                 <th>Nama Penyewa</th>
-                                <th>Jenis Acara</th>
-                                <th>Tanggal</th>
+                                <th>Acara</th>
+                                <th>Tanggal Sewa</th>
+                                <th>Durasi</th>
                                 <th>Total Biaya</th>
-                                <th>Status</th>
+                                <th>Status Pembayaran</th>
+                                <th>Tanggal Pesan</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php
-                            try {
-                                // Check if tables exist
-                                $tables_check = mysqli_query($conn, "SHOW TABLES LIKE 'pemesanan'");
-                                
-                                if (mysqli_num_rows($tables_check) > 0) {
-                                    // Get column info
-                                    $columns_check = mysqli_query($conn, "SHOW COLUMNS FROM pemesanan");
-                                    $columns = [];
-                                    while ($col = mysqli_fetch_assoc($columns_check)) {
-                                        $columns[] = $col['Field'];
-                                    }
+                            // Query laporan penyewaan
+                            $query = "SELECT 
+                                        p.id_pemesanan,
+                                        p.tanggal_sewa,
+                                        p.tanggal_selesai,
+                                        p.durasi,
+                                        p.total,
+                                        p.tanggal_pesan,
+                                        CASE 
+                                            WHEN py.tipe_penyewa = 'instansi' THEN py.nama_instansi
+                                            ELSE py.nama_lengkap
+                                        END as nama_penyewa,
+                                        a.nama_acara,
+                                        COALESCE(pb.status_pembayaran, 'Belum Lunas') as status_pembayaran
+                                      FROM pemesanan p
+                                      LEFT JOIN penyewa py ON p.id_penyewa = py.id_penyewa
+                                      LEFT JOIN acara a ON p.id_acara = a.id_acara
+                                      LEFT JOIN pembayaran pb ON p.id_pemesanan = pb.id_pemesanan
+                                      ORDER BY p.tanggal_pesan DESC";
+                            
+                            $result = mysqli_query($conn, $query);
+                            $no = 1;
+                            
+                            if ($result && mysqli_num_rows($result) > 0) {
+                                while ($row = mysqli_fetch_assoc($result)) {
+                                    $status_class = ($row['status_pembayaran'] == 'Lunas') ? 'badge-success' : 'badge-warning';
                                     
-                                    // Build dynamic query based on available columns
-                                    $select_fields = [];
-                                    $select_fields[] = in_array('id', $columns) ? 'p.id' : 'p.id_pemesanan as id';
-                                    $select_fields[] = "'Customer' as nama_penyewa"; // Default value first
-                                    $select_fields[] = in_array('jenis_acara', $columns) ? 'p.jenis_acara' : "'Event' as jenis_acara";
-                                    $select_fields[] = in_array('tanggal_acara', $columns) ? 'p.tanggal_acara' : 'p.tanggal_sewa as tanggal_acara';
-                                    $select_fields[] = in_array('total_biaya', $columns) ? 'p.total_biaya' : 'p.total as total_biaya';
-                                    $select_fields[] = in_array('status', $columns) ? 'p.status' : "'Pending' as status";
-                                    
-                                    $query = "SELECT " . implode(', ', $select_fields) . " FROM pemesanan p ";
-                                    
-                                    // Check if penyewa table exists and join
-                                    $penyewa_check = mysqli_query($conn, "SHOW TABLES LIKE 'penyewa'");
-                                    if (mysqli_num_rows($penyewa_check) > 0) {
-                                        $penyewa_columns_check = mysqli_query($conn, "SHOW COLUMNS FROM penyewa");
-                                        $penyewa_columns = [];
-                                        while ($col = mysqli_fetch_assoc($penyewa_columns_check)) {
-                                            $penyewa_columns[] = $col['Field'];
-                                        }
-                                        
-                                        if (in_array('id_penyewa', $columns)) {
-                                            $query .= "LEFT JOIN penyewa py ON p.id_penyewa = py.id_penyewa ";
-                                            // Replace the default customer name with actual data
-                                            $name_field = in_array('nama_lengkap', $penyewa_columns) ? 'py.nama_lengkap' : 
-                                                         (in_array('nama_instansi', $penyewa_columns) ? 'py.nama_instansi' : 
-                                                         "'Customer'");
-                                            $select_fields[1] = "COALESCE($name_field, 'Customer') as nama_penyewa";
-                                            $query = "SELECT " . implode(', ', $select_fields) . " FROM pemesanan p LEFT JOIN penyewa py ON p.id_penyewa = py.id_penyewa ";
-                                        }
-                                    }
-                                    
-                                    $query .= "ORDER BY ";
-                                    if (in_array('tanggal_acara', $columns)) {
-                                        $query .= 'p.tanggal_acara DESC';
-                                    } else if (in_array('id', $columns)) {
-                                        $query .= 'p.id DESC';
-                                    } else {
-                                        $query .= 'p.id_pemesanan DESC';
-                                    }
-                                    $query .= " LIMIT 50";
-                                    
-                                    $result = mysqli_query($conn, $query);
-                                    
-                                    if ($result && mysqli_num_rows($result) > 0) {
-                                        $no = 1;
-                                        while ($row = mysqli_fetch_assoc($result)) {
-                                            $status_class = 'badge-info';
-                                            switch (strtolower($row['status'])) {
-                                                case 'confirmed':
-                                                case 'completed':
-                                                    $status_class = 'badge-success';
-                                                    break;
-                                                case 'cancelled':
-                                                    $status_class = 'badge-danger';
-                                                    break;
-                                                case 'pending':
-                                                    $status_class = 'badge-warning';
-                                                    break;
-                                            }
-                                            
-                                            echo "<tr>";
-                                            echo "<td class='text-center'>{$no}</td>";
-                                            echo "<td>" . htmlspecialchars($row['nama_penyewa']) . "</td>";
-                                            echo "<td>" . htmlspecialchars($row['jenis_acara']) . "</td>";
-                                            echo "<td>" . date('d/m/Y', strtotime($row['tanggal_acara'])) . "</td>";
-                                            echo "<td>Rp " . number_format($row['total_biaya'], 0, ',', '.') . "</td>";
-                                            echo "<td><span class='badge {$status_class}'>" . htmlspecialchars($row['status']) . "</span></td>";
-                                            echo "</tr>";
-                                            $no++;
-                                        }
-                                    } else {
-                                        echo "<tr><td colspan='6' class='text-center'>Tidak ada data pemesanan</td></tr>";
-                                    }
-                                } else {
-                                    // Sample data if table doesn't exist
-                                    $sample_data = [
-                                        ['Budi Santoso', 'Pernikahan', '2024-01-15', 15000000, 'Completed'],
-                                        ['Sari Dewi', 'Seminar', '2024-01-10', 8000000, 'Confirmed'],
-                                        ['PT. Maju Jaya', 'Rapat', '2024-01-08', 5000000, 'Pending'],
-                                        ['Ahmad Rahman', 'Pernikahan', '2024-01-05', 12000000, 'Completed'],
-                                        ['CV. Sukses', 'Seminar', '2024-01-03', 7000000, 'Confirmed']
-                                    ];
-                                    
-                                    foreach ($sample_data as $index => $data) {
-                                        $status_class = 'badge-info';
-                                        switch (strtolower($data[4])) {
-                                            case 'completed':
-                                            case 'confirmed':
-                                                $status_class = 'badge-success';
-                                                break;
-                                            case 'pending':
-                                                $status_class = 'badge-warning';
-                                                break;
-                                        }
-                                        
-                                        echo "<tr>";
-                                        echo "<td class='text-center'>" . ($index + 1) . "</td>";
-                                        echo "<td>{$data[0]}</td>";
-                                        echo "<td>{$data[1]}</td>";
-                                        echo "<td>" . date('d/m/Y', strtotime($data[2])) . "</td>";
-                                        echo "<td>Rp " . number_format($data[3], 0, ',', '.') . "</td>";
-                                        echo "<td><span class='badge {$status_class}'>{$data[4]}</span></td>";
-                                        echo "</tr>";
-                                    }
+                                    echo "<tr data-tanggal='{$row['tanggal_sewa']}' data-acara='{$row['nama_acara']}' data-status='{$row['status_pembayaran']}'>";
+                                    echo "<td><strong>$no</strong></td>";
+                                    echo "<td><strong>#{$row['id_pemesanan']}</strong></td>";
+                                    echo "<td><strong>{$row['nama_penyewa']}</strong></td>";
+                                    echo "<td>{$row['nama_acara']}</td>";
+                                    echo "<td>" . date('d M Y', strtotime($row['tanggal_sewa'])) . "</td>";
+                                    echo "<td>{$row['durasi']} hari</td>";
+                                    echo "<td><strong>Rp " . number_format($row['total'], 0, ',', '.') . "</strong></td>";
+                                    echo "<td><span class='badge {$status_class}'>{$row['status_pembayaran']}</span></td>";
+                                    echo "<td>" . date('d M Y H:i', strtotime($row['tanggal_pesan'])) . "</td>";
+                                    echo "</tr>";
+                                    $no++;
                                 }
-                            } catch (Exception $e) {
-                                echo "<tr><td colspan='6' class='text-center text-red-500'>Error loading data: " . htmlspecialchars($e->getMessage()) . "</td></tr>";
+                            } else {
+                                echo "<tr>";
+                                echo "<td colspan='9' class='empty-state'>";
+                                echo "<div class='empty-icon'><i class='fas fa-chart-bar'></i></div>";
+                                echo "<div class='empty-text'>Belum ada data laporan</div>";
+                                echo "</td>";
+                                echo "</tr>";
                             }
                             ?>
                         </tbody>
@@ -1090,264 +820,270 @@ if (!isset($_SESSION['admin_logged_in'])) {
     </div>
 
     <script>
-        // Global variables
-        let mobileMenuOpen = false;
+        let allData = [];
+        let filteredData = [];
+        let chartInitialized = false;
 
-        // Utility functions
-        function toggleMobileMenu() {
-            console.log('toggleMobileMenu called');
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.querySelector('.mobile-overlay');
-            const toggle = document.querySelector('.mobile-menu-toggle');
+        // Load data on page ready
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!chartInitialized) {
+                loadData();
+                setTimeout(initChart, 100); // Small delay to ensure DOM is ready
+                chartInitialized = true;
+            }
+        });
+
+        function loadData() {
+            const tableRows = document.querySelectorAll('#laporanTable tbody tr');
+            allData = [];
             
-            if (!sidebar || !overlay || !toggle) {
-                console.error('Mobile menu elements not found:', {sidebar, overlay, toggle});
+            tableRows.forEach(row => {
+                const cells = row.cells;
+                if (cells.length > 1) {
+                    allData.push({
+                        no: cells[0].textContent.trim(),
+                        id_pemesanan: cells[1].textContent.trim(),
+                        nama_penyewa: cells[2].textContent.trim(),
+                        nama_acara: cells[3].textContent.trim(),
+                        tanggal_sewa: cells[4].textContent.trim(),
+                        tanggal_sewa_raw: row.getAttribute('data-tanggal'),
+                        durasi: cells[5].textContent.trim(),
+                        total: cells[6].textContent.trim(),
+                        status: cells[7].textContent.trim(),
+                        tanggal_pesan: cells[8].textContent.trim()
+                    });
+                }
+            });
+            
+            filteredData = allData;
+        }
+
+        function applyFilter() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const acaraFilter = document.getElementById('acaraFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            filteredData = allData.filter(item => {
+                let dateMatch = true;
+                let acaraMatch = true;
+                let statusMatch = true;
+                
+                // Date filter
+                if (startDate && item.tanggal_sewa_raw) {
+                    const itemDate = new Date(item.tanggal_sewa_raw);
+                    const filterDate = new Date(startDate);
+                    dateMatch = itemDate >= filterDate;
+                }
+                
+                if (endDate && dateMatch && item.tanggal_sewa_raw) {
+                    const itemDate = new Date(item.tanggal_sewa_raw);
+                    const filterDate = new Date(endDate);
+                    dateMatch = itemDate <= filterDate;
+                }
+                
+                // Acara filter
+                if (acaraFilter) {
+                    acaraMatch = item.nama_acara === acaraFilter;
+                }
+                
+                // Status filter
+                if (statusFilter) {
+                    statusMatch = item.status.includes(statusFilter);
+                }
+                
+                return dateMatch && acaraMatch && statusMatch;
+            });
+            
+            updateTable();
+        }
+
+        function resetFilter() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('acaraFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            
+            filteredData = allData;
+            updateTable();
+        }
+
+        function updateTable() {
+            const tbody = document.querySelector('#laporanTable tbody');
+            
+            if (filteredData.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="9" class="empty-state">
+                        <i class="fas fa-chart-bar"></i><br>
+                        Tidak ada data yang sesuai dengan filter
+                    </td></tr>
+                `;
+                return;
+            }
+            
+            let tableHTML = '';
+            filteredData.forEach((item, index) => {
+                const statusClass = item.status.includes('Lunas') ? 'badge-success' : 'badge-warning';
+                
+                tableHTML += `
+                    <tr>
+                        <td><strong>${index + 1}</strong></td>
+                        <td><strong>${item.id_pemesanan}</strong></td>
+                        <td><strong>${item.nama_penyewa}</strong></td>
+                        <td>${item.nama_acara}</td>
+                        <td>${item.tanggal_sewa}</td>
+                        <td>${item.durasi}</td>
+                        <td><strong>${item.total}</strong></td>
+                        <td><span class="badge ${statusClass}">${item.status}</span></td>
+                        <td>${item.tanggal_pesan}</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = tableHTML;
+        }
+
+        function initChart() {
+            // Pastikan Chart.js sudah loaded
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js not loaded');
                 return;
             }
 
-            mobileMenuOpen = !mobileMenuOpen;
-            console.log('Mobile menu open:', mobileMenuOpen);
-            
-            if (mobileMenuOpen) {
-                sidebar.classList.add('active');
-                overlay.classList.add('active');
-                toggle.innerHTML = '<i class="fas fa-times"></i>';
-                document.body.style.overflow = 'hidden'; // Prevent background scroll
-                console.log('Mobile menu opened');
-            } else {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-                toggle.innerHTML = '<i class="fas fa-bars"></i>';
-                document.body.style.overflow = 'auto';
-                console.log('Mobile menu closed');
+            const ctx = document.getElementById('monthlyChart');
+            if (!ctx) {
+                console.error('Canvas element not found');
+                return;
             }
+
+            // Destroy existing chart if exists
+            if (window.monthlyChart instanceof Chart) {
+                window.monthlyChart.destroy();
+            }
+
+            // Get data dari PHP untuk grafik
+            <?php
+            // Query data pemesanan per bulan tahun ini
+            $monthly_data = [];
+            $monthly_labels = [];
+            
+            for ($i = 1; $i <= 12; $i++) {
+                $month_name = date('M', mktime(0, 0, 0, $i, 1));
+                $monthly_labels[] = $month_name;
+                
+                // Hitung pemesanan per bulan
+                $month_query = "SELECT COUNT(*) as total FROM pemesanan WHERE MONTH(tanggal_pesan) = $i AND YEAR(tanggal_pesan) = YEAR(NOW())";
+                $month_result = mysqli_query($conn, $month_query);
+                $month_count = $month_result ? mysqli_fetch_assoc($month_result)['total'] : 0;
+                $monthly_data[] = (int)$month_count;
+            }
+            ?>
+            
+            const labels = <?= json_encode($monthly_labels) ?>;
+            const pemesananData = <?= json_encode($monthly_data) ?>;
+            
+            const config = {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Jumlah Pemesanan',
+                        data: pemesananData,
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(99, 102, 241, 1)',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#64748b'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                stepSize: 1,
+                                color: '#64748b',
+                                callback: function(value) {
+                                    return Math.floor(value);
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverRadius: 8
+                        }
+                    }
+                }
+            };
+
+            try {
+                window.monthlyChart = new Chart(ctx, config);
+            } catch (error) {
+                console.error('Error creating chart:', error);
+                document.getElementById('monthlyChart').style.display = 'none';
+                document.querySelector('.chart-wrapper').innerHTML = '<div style="text-align: center; color: #64748b; padding: 60px;">Grafik tidak dapat dimuat</div>';
+            }
+        }
+
+        function exportData() {
+            // Implement export functionality
+            alert('Fitur export akan segera tersedia');
+        }
+
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
         }
 
         function closeMobileMenu() {
-            console.log('closeMobileMenu called');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.mobile-overlay');
-            const toggle = document.querySelector('.mobile-menu-toggle');
             
-            if (!sidebar || !overlay) {
-                console.error('Mobile menu elements not found for close');
-                return;
-            }
-
-            mobileMenuOpen = false;
             sidebar.classList.remove('active');
             overlay.classList.remove('active');
-            if (toggle) {
-                toggle.innerHTML = '<i class="fas fa-bars"></i>';
-            }
-            document.body.style.overflow = 'auto';
-            console.log('Mobile menu force closed');
         }
-
-        // Report functions
-        function loadStats() {
-            console.log('Stats loaded from server-side rendering');
-        }
-
-        function loadReport() {
-            console.log('Report loaded from server-side rendering');
-        }
-
-        function refreshReport() {
-            showLoading();
-            setTimeout(() => {
-                location.reload();
-            }, 500);
-        }
-
-        function exportReport() {
-            // Simple export functionality
-            const table = document.querySelector('#reportTable');
-            if (!table) {
-                alert('Tidak ada data untuk di-export');
-                return;
-            }
-            
-            alert('Fitur export sedang dalam pengembangan.\nAnda dapat menggunakan Print untuk mencetak laporan.');
-        }
-
-        function showLoading() {
-            const tables = document.querySelectorAll('.table-container');
-            tables.forEach(table => {
-                const tbody = table.querySelector('tbody');
-                if (tbody) {
-                    tbody.innerHTML = '<tr><td colspan="100%" class="text-center"><div class="spinner"></div> Loading...</td></tr>';
-                }
-            });
-        }
-
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM ready - Initializing laporan penyewaan...');
-            
-            // Initialize mobile menu with multiple selectors
-            const mobileToggle = document.querySelector('.mobile-menu-toggle') || document.getElementById('mobileMenuToggle');
-            const overlay = document.querySelector('.mobile-overlay');
-            const sidebar = document.getElementById('sidebar');
-            
-            console.log('Elements found:', {
-                mobileToggle: !!mobileToggle,
-                overlay: !!overlay, 
-                sidebar: !!sidebar
-            });
-            
-            if (mobileToggle) {
-                // Remove any existing listeners
-                mobileToggle.removeAttribute('onclick');
-                
-                // Add click event listener
-                mobileToggle.addEventListener('click', function(e) {
-                    console.log('Mobile toggle clicked!');
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleMobileMenu();
-                });
-                
-                // Also add touch event for mobile
-                mobileToggle.addEventListener('touchstart', function(e) {
-                    console.log('Mobile toggle touched!');
-                    e.preventDefault();
-                    toggleMobileMenu();
-                });
-                
-                console.log('Mobile toggle event listeners added');
-            } else {
-                console.error('Mobile toggle button not found!');
-            }
-            
-            if (overlay) {
-                overlay.addEventListener('click', function(e) {
-                    console.log('Overlay clicked');
-                    e.preventDefault();
-                    closeMobileMenu();
-                });
-                console.log('Overlay event listener added');
-            }
-
-            // Close mobile menu when clicking nav links
-            const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth <= 768) {
-                        setTimeout(closeMobileMenu, 150);
-                    }
-                });
-            });
-
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                if (window.innerWidth > 768) {
-                    closeMobileMenu();
-                }
-            });
-
-            // Initialize stats with fallback
-            loadStatsFallback();
-            
-            console.log('Laporan penyewaan initialized successfully');
-        });
-
-        // Stats fallback function
-        function loadStatsFallback() {
-            <?php
-            try {
-                // Check if tables exist
-                $tables_check = mysqli_query($conn, "SHOW TABLES LIKE 'pemesanan'");
-                
-                if (mysqli_num_rows($tables_check) > 0) {
-                    // Get column info
-                    $columns_check = mysqli_query($conn, "SHOW COLUMNS FROM pemesanan");
-                    $columns = [];
-                    while ($col = mysqli_fetch_assoc($columns_check)) {
-                        $columns[] = $col['Field'];
-                    }
-                    
-                    // Determine column names
-                    $cost_column = in_array('total_biaya', $columns) ? 'total_biaya' : 
-                                  (in_array('total', $columns) ? 'total' : '0');
-                    $date_column = in_array('tanggal_acara', $columns) ? 'tanggal_acara' : 
-                                  (in_array('tanggal_sewa', $columns) ? 'tanggal_sewa' : 'created_at');
-                    
-                    // Calculate stats
-                    $pendapatan_result = mysqli_query($conn, "SELECT SUM($cost_column) as pendapatan FROM pemesanan");
-                    $pemesanan_result = mysqli_query($conn, "SELECT COUNT(*) as total FROM pemesanan");
-                    $bulan_result = mysqli_query($conn, "SELECT COUNT(*) as bulan FROM pemesanan WHERE MONTH($date_column) = MONTH(CURDATE()) AND YEAR($date_column) = YEAR(CURDATE())");
-                    
-                    $pendapatan = $pendapatan_result ? (mysqli_fetch_assoc($pendapatan_result)['pendapatan'] ?: 0) : 0;
-                    $total_pemesanan = $pemesanan_result ? mysqli_fetch_assoc($pemesanan_result)['total'] : 0;
-                    $bulan_ini = $bulan_result ? mysqli_fetch_assoc($bulan_result)['bulan'] : 0;
-                    
-                    $rata_rata = $total_pemesanan > 0 ? $pendapatan / 12 : 0;
-                    $okupansi = $total_pemesanan > 0 ? ($bulan_ini / 30) * 100 : 0;
-                } else {
-                    // Sample data
-                    $pendapatan = 10000000;
-                    $total_pemesanan = 25;
-                    $rata_rata = 850000;
-                    $okupansi = 15;
-                }
-                
-                echo "
-                try {
-                    const totalPendapatan = document.getElementById('totalPendapatan');
-                    const totalPemesanan = document.getElementById('totalPemesanan');
-                    const rataRataBulanan = document.getElementById('rataRataBulanan');
-                    const tingkatOkupansi = document.getElementById('tingkatOkupansi');
-                    
-                    if (totalPendapatan) {
-                        totalPendapatan.textContent = 
-                            new Intl.NumberFormat('id-ID', { 
-                                style: 'currency', 
-                                currency: 'IDR',
-                                minimumFractionDigits: 0
-                            }).format({$pendapatan});
-                    }
-                    
-                    if (totalPemesanan) {
-                        totalPemesanan.textContent = {$total_pemesanan};
-                    }
-                    
-                    if (rataRataBulanan) {
-                        rataRataBulanan.textContent = 
-                            new Intl.NumberFormat('id-ID', { 
-                                style: 'currency', 
-                                currency: 'IDR',
-                                minimumFractionDigits: 0
-                            }).format({$rata_rata});
-                    }
-                    
-                    if (tingkatOkupansi) {
-                        tingkatOkupansi.textContent = Math.round({$okupansi}) + '%';
-                    }
-                } catch (error) {
-                    console.error('Error updating stats:', error);
-                }
-                ";
-            } catch (Exception $e) {
-                echo "console.error('Stats error: " . addslashes($e->getMessage()) . "');";
-            }
-            ?>
-        }
-
-        // Prevent default behaviors
-        document.addEventListener('click', function(e) {
-            // Close mobile menu when clicking outside
-            if (mobileMenuOpen && !e.target.closest('.sidebar') && !e.target.closest('.mobile-menu-toggle')) {
-                closeMobileMenu();
-            }
-        });
-
-        // Keyboard navigation
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && mobileMenuOpen) {
-                closeMobileMenu();
-            }
-        });
     </script>
 </body>
 </html>

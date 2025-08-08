@@ -23,6 +23,7 @@ try {
         FROM pemesanan p
         LEFT JOIN acara a ON p.id_acara = a.id_acara
         LEFT JOIN penyewa pen ON p.id_penyewa = pen.id_penyewa
+        WHERE p.tanggal_pesan IS NOT NULL
         ORDER BY p.tanggal_pesan DESC
         LIMIT 3
     ");

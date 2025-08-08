@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../../config.php';
+require_once '../../simple_reorder.php';
 
 if (!isset($_SESSION['admin_logged_in'])) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
@@ -16,7 +17,10 @@ try {
     $result = $stmt->execute([$id]);
     
     if ($result) {
-        echo json_encode(['success' => true, 'message' => 'Penyewa berhasil dihapus']);
+        // Reorder all IDs to ensure sequential numbering
+        simpleReorderPenyewaIds();
+        
+        echo json_encode(['success' => true, 'message' => 'Penyewa berhasil dihapus dan ID telah diurutkan ulang']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Gagal menghapus penyewa']);
     }

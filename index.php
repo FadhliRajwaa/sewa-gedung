@@ -1015,16 +1015,18 @@ $eventPricing = getEventPricing($pdo);
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php">Home</a>
+                        <a class="nav-link" href="index.php">Beranda</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#acara">Pilih Acara</a>
                     </li>
+                    <?php if (isset($_SESSION['id_penyewa'])): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="acara_saya.php">Acara Saya</a>
+                        </li>
+                    <?php endif; ?>
                     <li class="nav-item">
                         <a class="nav-link" href="panduan.php">Panduan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="kontak.php">Hubungi Kami</a>
                     </li>
                     <?php if (isset($_SESSION['id_penyewa'])): ?>
                         <li class="nav-item">

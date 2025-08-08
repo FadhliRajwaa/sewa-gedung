@@ -33,7 +33,7 @@ $nama = $_SESSION['nama_lengkap'];
 
         /* Modern Navbar */
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
+            background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
             backdrop-filter: blur(20px);
             padding: 1rem 0;
             position: fixed;
@@ -45,7 +45,7 @@ $nama = $_SESSION['nama_lengkap'];
         }
 
         .navbar.scrolled {
-            background: rgba(255, 255, 255, 0.98);
+            background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
             padding: 0.8rem 0;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
         }
@@ -73,7 +73,7 @@ $nama = $_SESSION['nama_lengkap'];
         .nav-logo .logo-text {
             font-size: 18px;
             font-weight: 700;
-            color: #8B4513;
+            color: #ffffff;
             line-height: 1.2;
         }
 
@@ -85,7 +85,7 @@ $nama = $_SESSION['nama_lengkap'];
         }
 
         .nav-link {
-            color: #333;
+            color: #ffffff !important;
             text-decoration: none;
             font-weight: 500;
             font-size: 15px;
@@ -96,15 +96,15 @@ $nama = $_SESSION['nama_lengkap'];
         }
 
         .nav-link:hover {
-            color: #8B4513;
-            background: rgba(139, 69, 19, 0.1);
+            color: #F4E4BC !important;
+            background: rgba(255, 255, 255, 0.2);
             text-decoration: none;
             transform: translateY(-2px);
         }
 
         .nav-link.active {
-            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
-            color: white;
+            background: rgba(255, 255, 255, 0.3);
+            color: #F4E4BC !important;
         }
 
         .nav-toggle {
@@ -392,7 +392,7 @@ $nama = $_SESSION['nama_lengkap'];
             
             <ul class="nav-menu" id="navMenu">
                 <li><a href="dashboard_user.php" class="nav-link active"><i class="fas fa-home"></i> Beranda</a></li>
-                <li><a href="sewa.php" class="nav-link"><i class="fas fa-building"></i> Pilih Acara</a></li>
+                <li><a href="gedung.php" class="nav-link"><i class="fas fa-building"></i> Pilih Acara</a></li>
                 <li><a href="acara_saya.php" class="nav-link"><i class="fas fa-calendar-alt"></i> Acara Saya</a></li>
                 <li><a href="panduan.php" class="nav-link"><i class="fas fa-book"></i> Panduan</a></li>
                 <li><a href="akun.php" class="nav-link"><i class="fas fa-user"></i> Akun</a></li>

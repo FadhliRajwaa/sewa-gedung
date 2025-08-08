@@ -596,6 +596,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['bukti_pembayaran']))
                             <span class="bank-account">456-789-123</span>
                         </div>
                         <div class="bank-item">
+                            <span class="bank-name">Bank BRI</span>
+                            <span class="bank-account">321-654-987</span>
+                        </div>
+                        <div class="bank-item">
                             <span>Atas Nama</span>
                             <span class="bank-account">PT. ANEKA USAHA</span>
                         </div>
