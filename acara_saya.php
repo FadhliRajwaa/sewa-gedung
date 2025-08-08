@@ -134,7 +134,7 @@ try {
         .nav-toggle span {
             width: 25px;
             height: 3px;
-            background: #8B4513;
+            background: #ffffff;
             border-radius: 2px;
             transition: all 0.3s ease;
         }
@@ -388,7 +388,7 @@ try {
                 top: 100%;
                 left: 0;
                 width: 100%;
-                background: rgba(255, 255, 255, 0.98);
+                background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
                 backdrop-filter: blur(20px);
                 flex-direction: column;
                 gap: 0;
@@ -397,6 +397,7 @@ try {
                 opacity: 0;
                 visibility: hidden;
                 transition: all 0.3s ease;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             }
 
             .nav-menu.active {
@@ -409,6 +410,16 @@ try {
                 width: 100%;
                 text-align: center;
                 padding: 10px 0;
+            }
+            
+            .nav-menu .nav-link {
+                color: #ffffff !important;
+                font-weight: 500;
+            }
+            
+            .nav-menu .nav-link:hover {
+                color: #F4E4BC !important;
+                background: rgba(255, 255, 255, 0.2);
             }
 
             .nav-toggle {

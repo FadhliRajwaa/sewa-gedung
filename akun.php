@@ -351,7 +351,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 left: -100%;
                 top: 70px;
                 flex-direction: column;
-                background: rgba(255, 255, 255, 0.98);
+                background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
                 backdrop-filter: blur(20px);
                 width: 100%;
                 text-align: center;
@@ -362,6 +362,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             .nav-menu.active {
                 left: 0;
+            }
+            
+            .nav-menu .nav-link {
+                color: #ffffff !important;
+                font-weight: 500;
+            }
+            
+            .nav-menu .nav-link:hover {
+                color: #F4E4BC !important;
+                background: rgba(255, 255, 255, 0.2);
             }
 
             .nav-toggle {
